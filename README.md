@@ -132,7 +132,7 @@ A record consists of a 64-byte header and the bitmap, padded to a multiple of 16
 
 The bitmaps of all messages follow one after another. A bitmap consists of tiles of 8 columns × 11 rows, one byte per row, most significant bit on the left. The badge shows the messages in turn by itself (tested with three). In `animation` mode, a bitmap of several 48-column frames plays as an animation (tested with three).
 
-⚠ In `static` mode the badge shows bitmap column n on display column n+2 (measured). The driver compensates (`x_shift` in `drivers/lsled.py`). Display columns 0 and 1 cannot be reached in static mode; 42 columns are usable. `up`, `down`, `animation`, `snowflake`, `picture` and `laser` show the bitmap unshifted (measured), with all 44 columns usable; wider content is cut off.
+⚠ In `static` mode the firmware places the content by a rule of its own (measured: shifts of one and two columns, depending on the content). All other modes show the bitmap exactly as sent, and an `animation` with a single frame stands still. The driver therefore sends `static` as a single-frame `animation` (`WIRE_MODES` in `drivers/lsled.py`). One-screen modes thus use all 44 columns; wider content is cut off by the badge. With `--pages`, the speed sets how fast static pages change.
 
 The badge leaves Bluetooth mode after receiving data; switch it back on before the next transmission.
 

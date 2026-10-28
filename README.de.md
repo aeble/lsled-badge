@@ -132,7 +132,7 @@ Ein Datensatz besteht aus 64 Byte Kopf und der Bitmap, aufgefüllt auf ein Vielf
 
 Die Bitmaps aller Nachrichten folgen direkt aufeinander. Eine Bitmap besteht aus Kacheln zu 8 Spalten × 11 Zeilen, ein Byte pro Zeile, höchstwertiges Bit links. Das Badge zeigt die Nachrichten von selbst nacheinander (getestet mit drei). Im Modus `animation` spielt eine Bitmap aus mehreren Bildern zu 48 Spalten als Animation ab (getestet mit drei).
 
-⚠ Im Modus `static` zeigt das Badge Bitmap-Spalte n auf Displayspalte n+2 (gemessen). Der Treiber gleicht das aus (`x_shift` in `drivers/lsled.py`). Die Displayspalten 0 und 1 sind statisch nicht erreichbar, nutzbar sind 42 Spalten. `up`, `down`, `animation`, `snowflake`, `picture` und `laser` zeigen die Bitmap unverschoben (gemessen), nutzbar sind alle 44 Spalten; was breiter ist, wird abgeschnitten.
+⚠ Im Modus `static` setzt die Firmware den Inhalt nach einer eigenen Regel (gemessen: je nach Inhalt um eine oder zwei Spalten verschoben). Alle anderen Modi zeigen die Bitmap genau wie gesendet, und eine `animation` aus einem einzigen Bild steht still. Der Treiber schickt `static` deshalb als einbildige `animation` (`WIRE_MODES` in `drivers/lsled.py`). Bildschirm-Modi nutzen damit alle 44 Spalten; was breiter ist, schneidet das Badge ab. Mit `--pages` bestimmt die Geschwindigkeit, wie schnell statische Seiten wechseln.
 
 Nach dem Empfang verlässt das Badge den Bluetooth-Modus; vor der nächsten Übertragung muss er wieder eingeschaltet werden.
 

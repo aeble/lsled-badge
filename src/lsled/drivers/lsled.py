@@ -18,6 +18,10 @@ MODES = {
     "picture": 7,
     "laser": 8,
 }
+# Measured on a 44x11 badge: the firmware places "static" content by a rule of its own (shifts of
+# one and two columns were seen for different content), while every other mode shows the bitmap
+# exactly as sent. A single-frame "animation" stands still, so static text goes out as that.
+WIRE_MODES = {"static": "animation"}
 # Header byte 5, by percent
 BRIGHTNESS = {100: 0x00, 75: 0x10, 50: 0x20, 25: 0x40}
 
@@ -40,16 +44,12 @@ class LsledDriver(Driver):
     name = "lsled"
     display = Display(width=44, height=11)
     modes = tuple(MODES)
-    # Measured on a 44x11 badge: in static mode, bitmap column n appears on display column n+2;
-    # up, down, animation, snowflake, picture and laser show the bitmap unshifted
-    x_shift = {"static": 2}
     # The header has mode and length fields for eight messages
     max_messages = 8
     service_uuid = SERVICE_UUID
     name_prefixes = ("LSLED",)
 
     def build_writes(self, pages: list[list[list[int]]], mode: str, speed: int, brightness: int) -> list[Write]:
-        shift = self.x_shift.get(mode, 0)
         # The badge only knows four steps; take the nearest, ties go to the brighter one
         level = min(BRIGHTNESS, key=lambda step: (abs(step - brightness), -step))
 
@@ -59,8 +59,8 @@ class LsledDriver(Driver):
         header[5] = BRIGHTNESS[level]
         bitmaps = b""
         for index, canvas in enumerate(pages):
-            bitmap, tiles = encode_tiles([row[shift:] for row in canvas])
-            header[8 + index] = (speed - 1) << 4 | MODES[mode]
+            bitmap, tiles = encode_tiles(canvas)
+            header[8 + index] = (speed - 1) << 4 | MODES[WIRE_MODES.get(mode, mode)]
             # Message lengths in tiles, big endian, from byte 16 on
             header[16 + 2 * index:18 + 2 * index] = tiles.to_bytes(2, "big")
             bitmaps += bitmap

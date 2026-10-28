@@ -15,6 +15,12 @@ class Font:
     height: int
     glyphs: dict[str, list[str]]
 
+    @property
+    def baseline(self) -> int:
+        """Lowest lit row of "H", where capitals stand; the bottom of the box if there is no "H"."""
+        lit = [y for y, row in enumerate(self.glyphs.get("H", [])) if "#" in row]
+        return lit[-1] if lit else self.height - 1
+
     def glyph(self, char: str) -> list[str] | None:
         # Fonts without lower case show the capital letter instead
         return self.glyphs.get(char) or self.glyphs.get(char.upper())

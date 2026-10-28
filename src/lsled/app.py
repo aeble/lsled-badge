@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from .core.fonts import Font, load_font, render_text
 from .core.i18n import LocalizedError
-from .core.render import layout, lit_rows, text_width
+from .core.render import layout, place_vertically, text_width
 from .drivers import Driver
 
 # What to do with text too wide for a one-screen mode
@@ -45,19 +45,21 @@ def compose(text: str, font: str, bold: bool, mode: str, overflow: str, driver: 
     loaded = load_font(font)
     text_rows = render_text(text, loaded, bold)
     width = text_width(text_rows)
-    too_wide = driver.is_fixed(mode) and width > driver.usable_width(mode)
+    too_wide = driver.is_fixed(mode) and width > driver.display.width
 
     autoscrolled = too_wide and overflow == "scroll"
     if autoscrolled:
         mode = "left"
     pages = [text_rows]
     if too_wide and overflow == "pages":
-        pages = split_pages(text, loaded, bold, driver.usable_width(mode))
+        pages = split_pages(text, loaded, bold, driver.display.width)
         if len(pages) > driver.max_messages:
             raise LocalizedError("err.too_many_pages", count=len(pages), max=driver.max_messages)
 
-    # Trim every page to the rows lit in the whole text, so all pages share one baseline
-    rows_used = lit_rows(text_rows)
     fixed = driver.is_fixed(mode)
-    canvases = [layout(rows[rows_used], driver.display, fixed, driver.x_shift.get(mode, 0)) for rows in pages]
-    return Composition(canvases, mode, width, autoscrolled, driver.usable_width(mode) if fixed else None)
+    canvases = []
+    for rows in pages:
+        # Each page on its own: one with descenders sits a row higher than one without
+        rows_used, top = place_vertically(rows, loaded.baseline, driver.display.height)
+        canvases.append(layout(rows[rows_used], driver.display, fixed, top))
+    return Composition(canvases, mode, width, autoscrolled, driver.display.width if fixed else None)
