@@ -21,6 +21,16 @@ class Driver:
     name_prefixes: tuple[str, ...] = ()
     # Characteristics whose notifications must be enabled before writing
     notify_characteristics: tuple[str, ...] = ()
+    # Modes in which the badge scrolls a strip of any width; all others show one screen
+    scroll_modes: tuple[str, ...] = ("left", "right")
+    # Columns the badge shifts one-screen content to the right, per mode
+    x_shift: dict[str, int] = {}
+
+    def is_fixed(self, mode: str) -> bool:
+        return mode not in self.scroll_modes
+
+    def usable_width(self, mode: str) -> int:
+        return self.display.width - self.x_shift.get(mode, 0)
 
     def matches(self, name: str | None, service_uuids: list[str]) -> bool:
         return self.service_uuid in service_uuids or (name or "").upper().startswith(self.name_prefixes)

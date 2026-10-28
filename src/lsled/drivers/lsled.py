@@ -38,15 +38,17 @@ def encode_tiles(canvas: list[list[int]]) -> tuple[bytes, int]:
 
 class LsledDriver(Driver):
     name = "lsled"
-    # Measured on a 44x11 badge: in static mode, bitmap column n appears on display column n+2
-    display = Display(width=44, height=11, static_x_shift=2)
+    display = Display(width=44, height=11)
     modes = tuple(MODES)
+    # Measured on a 44x11 badge: in static mode, bitmap column n appears on display column n+2;
+    # up, down, animation, snowflake, picture and laser show the bitmap unshifted
+    x_shift = {"static": 2}
     service_uuid = SERVICE_UUID
     name_prefixes = ("LSLED",)
 
     def build_writes(self, canvas: list[list[int]], mode: str, speed: int, brightness: int) -> list[Write]:
-        if mode == "static":
-            canvas = [row[self.display.static_x_shift:] for row in canvas]
+        shift = self.x_shift.get(mode, 0)
+        canvas = [row[shift:] for row in canvas]
         bitmap, tiles = encode_tiles(canvas)
         # The badge only knows four steps; take the nearest, ties go to the brighter one
         level = min(BRIGHTNESS, key=lambda step: (abs(step - brightness), -step))

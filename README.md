@@ -17,7 +17,7 @@ Python 3.10 or newer; dependencies are `bleak` and `pycryptodome` (for the `timh
 ## Usage
 
 ```bash
-lsled scan                                  # badges in range, with address
+lsled scan                                  # badges in range, with address (switch the badge to Bluetooth mode first)
 export LSLED_ADDR=<address from lsled scan>
 
 lsled preview Balrog                        # preview only
@@ -34,13 +34,13 @@ lsled web                                   # web interface on http://localhost:
 | `-d`, `--driver` | badge type, see Drivers | `lsled` |
 | `-f`, `--font` | see `lsled fonts` | `5x9` |
 | `--bold` | every glyph one column wider | off |
-| `--autoscroll` | with `static`, scroll left if the text does not fit | off |
+| `--autoscroll` | scroll left if the text does not fit on the display | off |
 | `-m`, `--mode` | `static`, `left`, `right`, `up`, `down`, `animation`, `snowflake`, `picture`, `laser` | `static` |
 | `-b`, `--brightness` | 1–100 (percent; LSLED only knows 25/50/75/100 and takes the nearest step) | 25 |
 | `-s`, `--speed` | 1–8 | 5 |
 | `-a`, `--address` | BLE address (macOS: UUID) | `$LSLED_ADDR` |
 
-In static mode the text is centered. If it is too wide, `lsled` stops before sending; with `--autoscroll` it scrolls left instead. The web interface calls this toggle “scroll if too wide”.
+In `left` and `right` the badge scrolls the text, whatever its width. All other modes show one screen: the text is centered and must fit. If it is too wide, `lsled` stops before sending; with `--autoscroll` it scrolls left instead. The web interface calls this toggle “scroll if too wide”.
 
 ## Web interface
 
@@ -107,7 +107,7 @@ Dependencies only point downwards: `ui` → `app` → `drivers`/`transport` → 
 
 ## Drivers
 
-A driver (`drivers/base.py`) describes the display size, modes, how a scan recognizes the badge, and the characteristics whose notifications must be enabled before writing. `build_writes()` turns canvas, mode, speed (1–8) and brightness (percent) into a list of writes (characteristic, bytes, with or without response, pause afterwards). A new badge type is a new file in `drivers/` plus an entry in `drivers/__init__.py`.
+A driver (`drivers/base.py`) describes the display size, modes (which of them scroll, and the measured shift of the others), how a scan recognizes the badge, and the characteristics whose notifications must be enabled before writing. `build_writes()` turns canvas, mode, speed (1–8) and brightness (percent) into a list of writes (characteristic, bytes, with or without response, pause afterwards). A new badge type is a new file in `drivers/` plus an entry in `drivers/__init__.py`.
 
 | Driver | Badge | Display |
 |:---|:---|:---|
@@ -130,7 +130,9 @@ A record consists of a 64-byte header and the bitmap, padded to a multiple of 16
 
 The bitmap consists of tiles of 8 columns × 11 rows, one byte per row, most significant bit on the left.
 
-⚠ In static mode the badge shows bitmap column n on display column n+2 (measured). The driver compensates (`static_x_shift` in `drivers/lsled.py`). Display columns 0 and 1 cannot be reached in static mode; 42 columns are usable.
+⚠ In `static` mode the badge shows bitmap column n on display column n+2 (measured). The driver compensates (`x_shift` in `drivers/lsled.py`). Display columns 0 and 1 cannot be reached in static mode; 42 columns are usable. `up`, `down`, `animation`, `snowflake`, `picture` and `laser` show the bitmap unshifted (measured), with all 44 columns usable; wider content is cut off.
+
+The badge leaves Bluetooth mode after receiving data; switch it back on before the next transmission.
 
 ## Credits and licenses
 

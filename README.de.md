@@ -17,7 +17,7 @@ Python 3.10 oder neuer, Abhängigkeiten `bleak` und `pycryptodome` (für den Tre
 ## Benutzung
 
 ```bash
-lsled scan                                  # Badges in Reichweite mit Adresse
+lsled scan                                  # Badges in Reichweite mit Adresse (vorher am Badge den Bluetooth-Modus einschalten)
 export LSLED_ADDR=<Adresse aus lsled scan>
 
 lsled preview Balrog                        # nur Vorschau
@@ -34,13 +34,13 @@ lsled web                                   # Weboberfläche auf http://localhos
 | `-d`, `--driver` | Badge-Typ, siehe Abschnitt Treiber | `lsled` |
 | `-f`, `--font` | siehe `lsled fonts` | `5x9` |
 | `--bold` | jede Glyphe eine Spalte breiter | aus |
-| `--autoscroll` | bei `static` nach links laufen, wenn der Text nicht passt | aus |
+| `--autoscroll` | nach links laufen, wenn der Text nicht aufs Display passt | aus |
 | `-m`, `--mode` | `static`, `left`, `right`, `up`, `down`, `animation`, `snowflake`, `picture`, `laser` | `static` |
 | `-b`, `--brightness` | 1–100 (Prozent; LSLED kennt nur 25/50/75/100 und nimmt die nächste Stufe) | 25 |
 | `-s`, `--speed` | 1–8 | 5 |
 | `-a`, `--address` | BLE-Adresse (macOS: UUID) | `$LSLED_ADDR` |
 
-Im statischen Modus wird der Text zentriert. Ist er zu breit, bricht `lsled` vor dem Senden ab, mit `--autoscroll` läuft er stattdessen nach links durch. In der Weboberfläche heißt der Schalter „durchlaufen, wenn zu breit“.
+Bei `left` und `right` lässt das Badge den Text durchlaufen, egal wie breit er ist. Alle anderen Modi zeigen einen Bildschirm: Der Text wird zentriert und muss aufs Display passen. Ist er zu breit, bricht `lsled` vor dem Senden ab, mit `--autoscroll` läuft er stattdessen nach links durch. In der Weboberfläche heißt der Schalter „durchlaufen, wenn zu breit“.
 
 ## Weboberfläche
 
@@ -107,7 +107,7 @@ Abhängigkeiten zeigen nur nach unten: `ui` → `app` → `drivers`/`transport` 
 
 ## Treiber
 
-Ein Treiber (`drivers/base.py`) beschreibt Displaygröße, Modi, Erkennung beim Scan und die Characteristics, deren Benachrichtigungen vor dem Schreiben eingeschaltet sein müssen. `build_writes()` macht aus Pixelfläche, Modus, Geschwindigkeit (1–8) und Helligkeit (Prozent) eine Liste von Schreibvorgängen (Characteristic, Bytes, mit/ohne Antwort, Pause danach). Neue Badge-Typen sind eine neue Datei in `drivers/` plus Eintrag in `drivers/__init__.py`.
+Ein Treiber (`drivers/base.py`) beschreibt Displaygröße, Modi (welche durchlaufen und wie weit die übrigen verschieben), Erkennung beim Scan und die Characteristics, deren Benachrichtigungen vor dem Schreiben eingeschaltet sein müssen. `build_writes()` macht aus Pixelfläche, Modus, Geschwindigkeit (1–8) und Helligkeit (Prozent) eine Liste von Schreibvorgängen (Characteristic, Bytes, mit/ohne Antwort, Pause danach). Neue Badge-Typen sind eine neue Datei in `drivers/` plus Eintrag in `drivers/__init__.py`.
 
 | Treiber | Badge | Display |
 |:---|:---|:---|
@@ -130,7 +130,9 @@ Ein Datensatz besteht aus 64 Byte Kopf und der Bitmap, aufgefüllt auf ein Vielf
 
 Die Bitmap besteht aus Kacheln zu 8 Spalten × 11 Zeilen, ein Byte pro Zeile, höchstwertiges Bit links.
 
-⚠ Im statischen Modus zeigt das Badge Bitmap-Spalte n auf Displayspalte n+2 (gemessen). Der Treiber gleicht das aus (`static_x_shift` in `drivers/lsled.py`). Die Displayspalten 0 und 1 sind statisch nicht erreichbar, nutzbar sind 42 Spalten.
+⚠ Im Modus `static` zeigt das Badge Bitmap-Spalte n auf Displayspalte n+2 (gemessen). Der Treiber gleicht das aus (`x_shift` in `drivers/lsled.py`). Die Displayspalten 0 und 1 sind statisch nicht erreichbar, nutzbar sind 42 Spalten. `up`, `down`, `animation`, `snowflake`, `picture` und `laser` zeigen die Bitmap unverschoben (gemessen), nutzbar sind alle 44 Spalten; was breiter ist, wird abgeschnitten.
+
+Nach dem Empfang verlässt das Badge den Bluetooth-Modus; vor der nächsten Übertragung muss er wieder eingeschaltet werden.
 
 ## Herkunft und Lizenzen
 

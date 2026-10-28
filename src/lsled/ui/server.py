@@ -31,7 +31,6 @@ def web_config() -> dict:
                 "display": {
                     "width": driver.display.width,
                     "height": driver.display.height,
-                    "staticWidth": driver.display.static_width,
                 },
                 "modes": list(driver.modes),
                 "serviceUuid": driver.service_uuid,
@@ -67,6 +66,7 @@ def render(request: dict) -> dict:
         "mode": result.mode,
         "textWidth": result.text_width,
         "autoscrolled": result.autoscrolled,
+        "usableWidth": result.usable_width,
         "writes": [
             {"characteristic": w.characteristic, "data": w.data.hex(), "response": w.response, "pause": w.pause}
             for w in writes

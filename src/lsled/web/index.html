@@ -138,8 +138,8 @@ async function update() {
     canvasRows = result.canvas;
     writes = result.writes;
     draw(canvasRows);
-    const width = result.textWidth, usable = driver().display.staticWidth;
-    showHint(result.mode === "static"
+    const width = result.textWidth, usable = result.usableWidth;
+    showHint(usable !== null
       ? t("web.used", { width, usable })
       : t(result.autoscrolled ? "web.autoscrolled" : "web.scrolling", { width }), false);
   }

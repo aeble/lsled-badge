@@ -8,26 +8,17 @@ from .i18n import LocalizedError
 class Display:
     width: int
     height: int
-    # Columns the badge shifts static content to the right; those leftmost columns stay unreachable
-    static_x_shift: int = 0
-
-    @property
-    def static_width(self) -> int:
-        return self.width - self.static_x_shift
 
 
 def text_width(text_rows: list[list[int]]) -> int:
     return len(text_rows[0]) if text_rows else 0
 
 
-def fits_static(text_rows: list[list[int]], display: Display) -> bool:
-    return text_width(text_rows) <= display.static_width
-
-
-def layout(text_rows: list[list[int]], display: Display, static: bool) -> list[list[int]]:
+def layout(text_rows: list[list[int]], display: Display, fixed: bool, x_shift: int = 0) -> list[list[int]]:
     """Place the text on the display height.
 
-    Static: centered on a canvas of display.width columns, as the badge shows it.
+    Fixed (the badge shows one screen): centered on a canvas of display.width columns. x_shift is
+    how far the badge moves the content to the right; those leftmost columns stay unreachable.
     Otherwise: a strip as wide as the text, which the badge scrolls.
     """
     height = len(text_rows)
@@ -35,15 +26,22 @@ def layout(text_rows: list[list[int]], display: Display, static: bool) -> list[l
     if height > display.height:
         raise LocalizedError("err.font_too_tall", height=height, max=display.height)
 
-    if static:
-        if not fits_static(text_rows, display):
-            raise LocalizedError("err.too_wide", width=width, usable=display.static_width)
-        left = max(display.static_x_shift, (display.width - width) // 2)
+    if fixed:
+        usable = display.width - x_shift
+        if width > usable:
+            raise LocalizedError("err.too_wide", width=width, usable=usable)
+        left = max(x_shift, (display.width - width) // 2)
         canvas_width = display.width
     else:
         left = 0
         canvas_width = width
 
+    # Center the rows that actually light up, not the font box: otherwise text without descenders
+    # sits high, and fonts with room for accents above capitals push them down
+    lit = [y for y, row in enumerate(text_rows) if any(row)]
+    if lit:
+        text_rows = text_rows[lit[0]:lit[-1] + 1]
+        height = len(text_rows)
     top = (display.height - height) // 2
     canvas = [[0] * canvas_width for _ in range(display.height)]
     for y, row in enumerate(text_rows):
