@@ -1,0 +1,20 @@
+[project]
+name = "lsled-badge"
+version = "0.1.0"
+description = "LSLED-Namensbadges (BLE-Service fee0) mit Text bespielen, mit Vorschau in Terminal und Browser"
+readme = "README.md"
+authors = [
+    { name = "Axel Eble", email = "git@eble.name" }
+]
+requires-python = ">=3.10"
+dependencies = ["bleak>=3.0.2"]
+
+[project.scripts]
+lsled = "lsled.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.12.5,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "lsled"

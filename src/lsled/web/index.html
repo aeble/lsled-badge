@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LSLED Badge</title>
+<style>
+  :root {
+    --bg: #f4f4f2; --panel: #ffffff; --text: #1d1d1b; --muted: #6b6b66; --border: #d8d8d3;
+    --led-on: #ff3b1f; --led-off: #2a2a2a; --display: #111111; --accent: #1f5fd6; --error: #b3261e;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #161615; --panel: #20201f; --text: #ecece8; --muted: #9a9a94; --border: #3a3a37;
+            --display: #050505; --led-off: #1e1e1e; --accent: #6b9bff; --error: #ff8a80; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 15px/1.45 system-ui, -apple-system, sans-serif; }
+  main { max-width: 920px; margin: 0 auto; padding: 24px 16px; }
+  h1 { font-size: 20px; margin: 0 0 16px; }
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .display-wrap { background: var(--display); border-radius: 8px; padding: 12px; overflow-x: auto; margin-bottom: 8px; }
+  canvas { display: block; }
+  .hint { color: var(--muted); font-size: 13px; min-height: 1.4em; margin: 0 0 16px; }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px 16px; }
+  label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); }
+  label.check { flex-direction: row; align-items: center; gap: 8px; color: var(--text); font-size: 15px; }
+  input[type=text], select { font: inherit; padding: 7px 9px; border: 1px solid var(--border);
+         border-radius: 6px; background: var(--bg); color: var(--text); }
+  .text-field { grid-column: 1 / -1; }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 16px; }
+  button { font: inherit; padding: 8px 14px; border-radius: 6px; border: 1px solid var(--accent);
+           background: var(--accent); color: #fff; cursor: pointer; }
+  button.secondary { background: transparent; color: var(--accent); }
+  button:disabled { opacity: .45; cursor: default; }
+  #status { color: var(--muted); }
+  #status.error { color: var(--error); }
+</style>
+</head>
+<body>
+<main>
+  <h1>LSLED Badge</h1>
+  <div class="panel">
+    <div class="display-wrap"><canvas id="display"></canvas></div>
+    <p class="hint" id="hint"></p>
+    <div class="controls">
+      <label class="text-field"><span data-i18n="web.text"></span> <input type="text" id="text" value="Balrog" autocomplete="off"></label>
+      <label><span data-i18n="web.font"></span> <select id="font"></select></label>
+      <label><span data-i18n="web.mode"></span> <select id="mode"></select></label>
+      <label><span data-i18n="web.brightness"></span> <select id="brightness"></select></label>
+      <label><span data-i18n="web.speed"></span> <select id="speed"></select></label>
+      <label class="check"><input type="checkbox" id="bold"> <span data-i18n="web.bold"></span></label>
+      <label class="check"><input type="checkbox" id="autoscroll"> <span data-i18n="web.autoscroll"></span></label>
+    </div>
+    <div class="actions">
+      <button class="secondary" id="connect" data-i18n="web.connect"></button>
+      <button id="send" disabled data-i18n="web.send"></button>
+      <span id="status"></span>
+    </div>
+  </div>
+</main>
+<script>
+const $ = (id) => document.getElementById(id);
+const PIXEL = 14;
+let config, messages, characteristic, canvasRows = null, activeMode = null;
+
+const t = (key, values = {}) => messages[key].replace(/\{(\w+)\}/g, (_, name) => values[name]);
+
+function pickLanguage(available) {
+  // First browser language with a catalog; Norwegian -> nb, Simplified Chinese only
+  for (const tag of navigator.languages ?? [navigator.language]) {
+    const parts = tag.toLowerCase().split("-");
+    let language = parts[0];
+    if (language === "zh") {
+      if (!parts.slice(1).some((p) => ["hant", "tw", "hk", "mo"].includes(p))) return "zh-Hans";
+      continue;
+    }
+    if (language === "no" || language === "nn") language = "nb";
+    if (available.includes(language)) return language;
+  }
+  return "en";
+}
+
+function renderText(text, font, bold) {
+  const glyphOf = (ch) => font.glyphs[ch] ?? font.glyphs[ch.toUpperCase()];
+  const missing = [...new Set([...text].filter((ch) => !glyphOf(ch)))];
+  if (missing.length) throw new Error(t("err.missing_glyphs", { font: font.name, chars: missing.join("") }));
+  const rows = Array.from({ length: font.height }, () => []);
+  [...text].forEach((ch, index) => {
+    glyphOf(ch).forEach((pattern, y) => {
+      let bits = [...pattern].map((p) => (p === "#" ? 1 : 0));
+      // Bold: additionally set every pixel one column to the right
+      if (bold) bits = [...bits, 0].map((b, i) => b | (bits[i - 1] ?? 0));
+      if (index) rows[y].push(0);
+      rows[y].push(...bits);
+    });
+  });
+  return rows;
+}
+
+function layout(textRows, mode) {
+  const { width: displayWidth, height: displayHeight, staticXShift } = config.display;
+  const height = textRows.length;
+  const width = textRows[0]?.length ?? 0;
+  let left = 0, canvasWidth = width;
+  if (mode === "static") {
+    const usable = displayWidth - staticXShift;
+    if (width > usable) throw new Error(t("web.too_wide", { width, usable }));
+    left = Math.max(staticXShift, Math.floor((displayWidth - width) / 2));
+    canvasWidth = displayWidth;
+  }
+  const top = Math.floor((displayHeight - height) / 2);
+  const canvas = Array.from({ length: displayHeight }, () => new Array(canvasWidth).fill(0));
+  textRows.forEach((row, y) => row.forEach((p, x) => { canvas[top + y][left + x] = p; }));
+  return canvas;
+}
+
+function buildPackets(canvas, mode, speed, brightness) {
+  // Measured: in static mode, bitmap column n appears on display column n+2
+  if (mode === "static") canvas = canvas.map((row) => row.slice(config.display.staticXShift));
+  const tiles = Math.ceil(canvas[0].length / 8);
+  const bitmap = [];
+  for (let tile = 0; tile < tiles; tile++) {
+    for (const row of canvas) {
+      let byte = 0;
+      for (let b = 0; b < 8; b++) byte = (byte << 1) | (row[tile * 8 + b] ?? 0);
+      bitmap.push(byte);
+    }
+  }
+  const now = new Date();
+  const header = new Array(64).fill(0);
+  [..."wang"].forEach((c, i) => { header[i] = c.charCodeAt(0); });
+  header[5] = config.brightness[brightness];
+  header[8] = ((speed - 1) << 4) | config.modes[mode];
+  header[16] = tiles >> 8; header[17] = tiles & 0xff;
+  [now.getFullYear() % 100, now.getMonth() + 1, now.getDate(), now.getHours(), now.getMinutes(), now.getSeconds()]
+    .forEach((v, i) => { header[38 + i] = v; });
+  const data = [...header, ...bitmap];
+  while (data.length % 16) data.push(0);
+  const packets = [];
+  for (let i = 0; i < data.length; i += 16) packets.push(new Uint8Array(data.slice(i, i + 16)));
+  return packets;
+}
+
+function draw(canvas) {
+  const el = $("display");
+  const css = getComputedStyle(document.documentElement);
+  const width = canvas[0].length;
+  const ratio = window.devicePixelRatio || 1;
+  el.width = width * PIXEL * ratio; el.height = canvas.length * PIXEL * ratio;
+  el.style.width = `${width * PIXEL}px`; el.style.height = `${canvas.length * PIXEL}px`;
+  const ctx = el.getContext("2d");
+  ctx.scale(ratio, ratio);
+  // Rough brightness simulation; 25 % stays clearly visible
+  const alpha = 0.4 + 0.6 * Number($("brightness").value) / 100;
+  canvas.forEach((row, y) => row.forEach((p, x) => {
+    ctx.globalAlpha = p ? alpha : 1;
+    ctx.fillStyle = p ? css.getPropertyValue("--led-on") : css.getPropertyValue("--led-off");
+    ctx.beginPath();
+    ctx.arc(x * PIXEL + PIXEL / 2, y * PIXEL + PIXEL / 2, PIXEL * 0.38, 0, 2 * Math.PI);
+    ctx.fill();
+  }));
+}
+
+function update() {
+  let mode = $("mode").value;
+  try {
+    const text = $("text").value;
+    if (!text) throw new Error(t("web.empty"));
+    const font = config.fonts[$("font").value];
+    const textRows = renderText(text, font, $("bold").checked);
+    const width = textRows[0].length;
+    const usable = config.display.width - config.display.staticXShift;
+    const autoscrolled = $("autoscroll").checked && mode === "static" && width > usable;
+    if (autoscrolled) mode = "left";
+    canvasRows = layout(textRows, mode);
+    activeMode = mode;
+    draw(canvasRows);
+    $("hint").textContent = mode === "static"
+      ? t("web.used", { width, usable })
+      : t(autoscrolled ? "web.autoscrolled" : "web.scrolling", { width });
+    $("hint").style.color = "";
+  } catch (error) {
+    canvasRows = null;
+    $("hint").textContent = error.message;
+    $("hint").style.color = "var(--error)";
+  }
+  $("send").disabled = !(canvasRows && characteristic);
+}
+
+function setStatus(message, isError = false) {
+  $("status").textContent = message;
+  $("status").className = isError ? "error" : "";
+}
+
+async function connect() {
+  if (!navigator.bluetooth) {
+    setStatus(t("web.no_bluetooth"), true);
+    return;
+  }
+  try {
+    const device = await navigator.bluetooth.requestDevice({
+      filters: [{ namePrefix: "LSLED" }],
+      optionalServices: [config.serviceUuid],
+    });
+    device.addEventListener("gattserverdisconnected", () => {
+      characteristic = null;
+      setStatus(t("web.disconnected"));
+      update();
+    });
+    const server = await device.gatt.connect();
+    const service = await server.getPrimaryService(config.serviceUuid);
+    characteristic = await service.getCharacteristic(config.charUuid);
+    setStatus(t("web.connected", { name: device.name }));
+  } catch (error) {
+    setStatus(t("web.connect_failed", { error: error.message }), true);
+  }
+  update();
+}
+
+async function send() {
+  const packets = buildPackets(canvasRows, activeMode, Number($("speed").value), $("brightness").value);
+  $("send").disabled = true;
+  try {
+    for (const packet of packets) await characteristic.writeValueWithResponse(packet);
+    setStatus(t("web.sent", { count: packets.length }));
+  } catch (error) {
+    setStatus(t("web.send_failed", { error: error.message }), true);
+  }
+  update();
+}
+
+function fillSelect(id, values, selected, label = (v) => v) {
+  $(id).innerHTML = values.map((v) => `<option value="${v}"${v == selected ? " selected" : ""}>${label(v)}</option>`).join("");
+}
+
+async function init() {
+  config = await (await fetch("config.json")).json();
+  for (const [name, font] of Object.entries(config.fonts)) font.name = name;
+  const language = pickLanguage(Object.keys(config.messages));
+  messages = config.messages[language];
+  document.documentElement.lang = language;
+  document.querySelectorAll("[data-i18n]").forEach((el) => { el.textContent = t(el.dataset.i18n); });
+  fillSelect("font", Object.keys(config.fonts), "5x9");
+  fillSelect("mode", Object.keys(config.modes), "static", (mode) => t(`mode.${mode}`));
+  fillSelect("brightness", Object.keys(config.brightness).sort((a, b) => b - a), "25", (v) => `${v} %`);
+  fillSelect("speed", [1, 2, 3, 4, 5, 6, 7, 8], 5);
+  for (const id of ["text", "font", "mode", "brightness", "speed", "bold", "autoscroll"]) $(id).addEventListener("input", update);
+  $("connect").addEventListener("click", connect);
+  $("send").addEventListener("click", send);
+  update();
+}
+
+// Without config.json there are no catalogs, hence English
+init().catch((error) => setStatus(`Could not load config.json: ${error.message}`, true));
+</script>
+</body>
+</html>
