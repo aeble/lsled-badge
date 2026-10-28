@@ -63,5 +63,10 @@
  "opt.driver": "이름표 종류, 기본값 lsled",
  "web.driver": "이름표 종류",
  "err.mode_unsupported": "이름표 종류 '{driver}'은(는) '{mode}' 모드를 지원하지 않습니다. 사용 가능: {modes}",
- "err.device_not_found": "이름표 {address}을(를) 찾을 수 없습니다. 켜져 있고 범위 안에 있나요? lsled scan으로 주변 이름표를 볼 수 있습니다."
+ "err.device_not_found": "이름표 {address}을(를) 찾을 수 없습니다. 켜져 있고 범위 안에 있나요? lsled scan으로 주변 이름표를 볼 수 있습니다.",
+ "web.device": "이름표",
+ "web.scan": "검색",
+ "web.scanning": "이름표 검색 중…",
+ "web.found": "찾은 이름표: {count}",
+ "web.sending": "보내는 중…"
 }

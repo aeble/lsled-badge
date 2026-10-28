@@ -63,5 +63,10 @@
  "opt.driver": "tipo de placa, por defecto lsled",
  "web.driver": "Tipo de placa",
  "err.mode_unsupported": "El tipo de placa «{driver}» no admite el modo «{mode}». Disponibles: {modes}",
- "err.device_not_found": "No se encontró la placa {address}. ¿Está encendida y al alcance? lsled scan muestra las placas cercanas."
+ "err.device_not_found": "No se encontró la placa {address}. ¿Está encendida y al alcance? lsled scan muestra las placas cercanas.",
+ "web.device": "Placa",
+ "web.scan": "Buscar",
+ "web.scanning": "Buscando placas…",
+ "web.found": "Placas encontradas: {count}",
+ "web.sending": "Enviando…"
 }

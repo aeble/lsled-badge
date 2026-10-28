@@ -1,17 +1,26 @@
-"""Local HTTP server for the web interface: serves the page, the config and rendering."""
+"""Local HTTP server for the web interface: page, config, rendering and sending via local Bluetooth."""
+import asyncio
 import json
+import threading
 import webbrowser
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from urllib.parse import parse_qs, urlparse
+
+from bleak.exc import BleakError
 
 from ..app import compose
 from ..core.fonts import available_fonts, load_font
 from ..core.i18n import FALLBACK, LocalizedError, available_languages, load_messages, t
 from ..drivers import DEFAULT_DRIVER, DRIVERS
+from ..transport import ble
 
 WEB_DIR = Path(__file__).parent.parent / "web"
 # Errors whose wording differs on the web page (it names the toggle instead of the option)
 WEB_KEYS = {"err.too_wide": "web.too_wide"}
+SCAN_TIMEOUT = 5.0
+# One Bluetooth operation at a time; requests arrive on parallel threads
+BLE_LOCK = threading.Lock()
 
 
 def web_config() -> dict:
@@ -36,17 +45,23 @@ def web_config() -> dict:
     }
 
 
-def render(request: dict) -> dict:
+def messages_for(request: dict) -> dict[str, str]:
     language = request.get("language")
-    messages = load_messages(language if language in available_languages() else FALLBACK)
+    return load_messages(language if language in available_languages() else FALLBACK)
+
+
+def prepare(request: dict):
     driver = DRIVERS[request["driver"]]
-    try:
-        result = compose(
-            request["text"], request["font"], request["bold"], request["mode"], request["autoscroll"], driver
-        )
-    except LocalizedError as error:
-        return {"error": error.translate(messages, WEB_KEYS.get(error.key))}
+    result = compose(request["text"], request["font"], request["bold"], request["mode"], request["autoscroll"], driver)
     writes = driver.build_writes(result.canvas, result.mode, request["speed"], request["brightness"])
+    return driver, result, writes
+
+
+def render(request: dict) -> dict:
+    try:
+        _driver, result, writes = prepare(request)
+    except LocalizedError as error:
+        return {"error": error.translate(messages_for(request), WEB_KEYS.get(error.key))}
     return {
         "canvas": result.canvas,
         "mode": result.mode,
@@ -57,6 +72,26 @@ def render(request: dict) -> dict:
             for w in writes
         ],
     }
+
+
+def find_devices(driver: str) -> dict:
+    with BLE_LOCK:
+        found = asyncio.run(ble.scan(SCAN_TIMEOUT))
+    return {"devices": [{"address": f.address, "name": f.name, "rssi": f.rssi} for f in found if f.driver == driver]}
+
+
+def send(request: dict) -> dict:
+    """Render again and send through this machine's Bluetooth, for browsers without Web Bluetooth."""
+    messages = messages_for(request)
+    try:
+        driver, _result, writes = prepare(request)
+        with BLE_LOCK:
+            asyncio.run(ble.execute(request["address"], driver, writes))
+    except LocalizedError as error:
+        return {"error": error.translate(messages, WEB_KEYS.get(error.key))}
+    except BleakError as error:
+        return {"error": messages["web.send_failed"].format(error=error)}
+    return {"count": len(writes)}
 
 
 class WebHandler(SimpleHTTPRequestHandler):
@@ -72,15 +107,19 @@ class WebHandler(SimpleHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_GET(self):
-        if self.path == "/config.json":
+        url = urlparse(self.path)
+        if url.path == "/config.json":
             return self.send_json(web_config())
+        if url.path == "/devices":
+            return self.send_json(find_devices(parse_qs(url.query)["driver"][0]))
         return super().do_GET()
 
     def do_POST(self):
-        if self.path != "/render":
+        handlers = {"/render": render, "/send": send}
+        if self.path not in handlers:
             return self.send_error(404)
         request = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
-        self.send_json(render(request))
+        self.send_json(handlers[self.path](request))
 
     def log_message(self, format, *args):
         # The page renders on every keystroke; request logging would flood the terminal

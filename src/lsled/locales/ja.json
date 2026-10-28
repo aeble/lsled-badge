@@ -63,5 +63,10 @@
  "opt.driver": "名札の種類（既定 lsled）",
  "web.driver": "名札の種類",
  "err.mode_unsupported": "名札の種類「{driver}」はモード「{mode}」に対応していません。利用可能: {modes}",
- "err.device_not_found": "名札 {address} が見つかりません。電源が入っていて範囲内にありますか？lsled scan で近くの名札を表示できます。"
+ "err.device_not_found": "名札 {address} が見つかりません。電源が入っていて範囲内にありますか？lsled scan で近くの名札を表示できます。",
+ "web.device": "名札",
+ "web.scan": "検索",
+ "web.scanning": "名札を検索中…",
+ "web.found": "見つかった名札: {count}",
+ "web.sending": "送信中…"
 }

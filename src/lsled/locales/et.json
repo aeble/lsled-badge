@@ -63,5 +63,10 @@
  "opt.driver": "sildi tüüp, vaikimisi lsled",
  "web.driver": "Sildi tüüp",
  "err.mode_unsupported": "Sildi tüüp „{driver}” ei toeta režiimi „{mode}”. Saadaval: {modes}",
- "err.device_not_found": "Silti {address} ei leitud. Kas see on sisse lülitatud ja levialas? lsled scan näitab lähedal olevaid silte."
+ "err.device_not_found": "Silti {address} ei leitud. Kas see on sisse lülitatud ja levialas? lsled scan näitab lähedal olevaid silte.",
+ "web.device": "Silt",
+ "web.scan": "Otsi",
+ "web.scanning": "Siltide otsimine…",
+ "web.found": "Leitud silte: {count}",
+ "web.sending": "Saatmine…"
 }

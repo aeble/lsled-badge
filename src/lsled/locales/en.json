@@ -63,5 +63,10 @@
  "opt.driver": "badge type, default lsled",
  "web.driver": "Badge type",
  "err.mode_unsupported": "Badge type '{driver}' does not support mode '{mode}'. Available: {modes}",
- "err.device_not_found": "Badge {address} not found. Is it switched on and in range? lsled scan lists the badges nearby."
+ "err.device_not_found": "Badge {address} not found. Is it switched on and in range? lsled scan lists the badges nearby.",
+ "web.device": "Badge",
+ "web.scan": "Search",
+ "web.scanning": "Searching for badges…",
+ "web.found": "Badges found: {count}",
+ "web.sending": "Sending…"
 }

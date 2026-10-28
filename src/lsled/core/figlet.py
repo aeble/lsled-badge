@@ -27,7 +27,8 @@ def read_flf(path: Path) -> tuple[int, dict[int, list[str]], str]:
     hardblank = header[0][5]
     height = int(header[1])
     comment_lines = int(header[5])
-    comment = lines[1].strip() if comment_lines else ""
+    # The comment block carries copyright and license notices, which must travel with the font
+    comment = "\n".join(line.rstrip() for line in lines[1:1 + comment_lines])
 
     def glyph_at(start: int) -> list[str]:
         rows = []
@@ -78,7 +79,8 @@ def convert_flf(path: Path, max_height: int) -> dict:
         glyphs[chr(code)] = ["".join("#" if pixel else "." for pixel in row[left:right]) for row in rows]
 
     return {
-        "description": f"figlet {path.name}" + (f": {comment}" if comment else ""),
+        "description": f"figlet {path.name}" + (f": {comment.splitlines()[0]}" if comment else ""),
+        "notice": comment,
         "height": bottom - top,
         "glyphs": glyphs,
     }

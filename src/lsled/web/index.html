@@ -46,6 +46,7 @@
     <div class="controls">
       <label class="text-field"><span data-i18n="web.text"></span> <input type="text" id="text" value="Balrog" autocomplete="off"></label>
       <label><span data-i18n="web.driver"></span> <select id="driver"></select></label>
+      <label><span data-i18n="web.device"></span> <select id="device"></select></label>
       <label><span data-i18n="web.font"></span> <select id="font"></select></label>
       <label><span data-i18n="web.mode"></span> <select id="mode"></select></label>
       <label><span data-i18n="web.brightness"></span> <select id="brightness"></select></label>
@@ -54,6 +55,7 @@
       <label class="check"><input type="checkbox" id="autoscroll"> <span data-i18n="web.autoscroll"></span></label>
     </div>
     <div class="actions">
+      <button class="secondary" id="scan" data-i18n="web.scan"></button>
       <button class="secondary" id="connect" data-i18n="web.connect"></button>
       <button id="send" disabled data-i18n="web.send"></button>
       <span id="status"></span>
@@ -109,19 +111,25 @@ function showHint(message, isError) {
   $("hint").style.color = isError ? "var(--error)" : "";
 }
 
+function settings() {
+  return {
+    text: $("text").value, font: $("font").value, bold: $("bold").checked,
+    mode: $("mode").value, autoscroll: $("autoscroll").checked, driver: $("driver").value,
+    speed: Number($("speed").value), brightness: Number($("brightness").value), language,
+  };
+}
+
+async function post(path, body) {
+  const response = await fetch(path, {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
+  });
+  return response.json();
+}
+
 async function update() {
   // Rendering happens on the server; only the newest answer is shown
   const seq = ++renderSeq;
-  const response = await fetch("render", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      text: $("text").value, font: $("font").value, bold: $("bold").checked,
-      mode: $("mode").value, autoscroll: $("autoscroll").checked, driver: $("driver").value,
-      speed: Number($("speed").value), brightness: Number($("brightness").value), language,
-    }),
-  });
-  const result = await response.json();
+  const result = await post("render", settings());
   if (seq !== renderSeq) return;
   if (result.error) {
     canvasRows = writes = null;
@@ -135,7 +143,8 @@ async function update() {
       ? t("web.used", { width, usable })
       : t(result.autoscrolled ? "web.autoscrolled" : "web.scrolling", { width }), false);
   }
-  $("send").disabled = !(writes && service);
+  // Send through the browser connection if there is one, otherwise through the server
+  $("send").disabled = !(writes && (service || $("device").value));
 }
 
 function setStatus(message, isError = false) {
@@ -182,8 +191,35 @@ async function connect() {
   update();
 }
 
+async function scan() {
+  $("scan").disabled = true;
+  setStatus(t("web.scanning"));
+  try {
+    const { devices } = await (await fetch(`devices?driver=${encodeURIComponent($("driver").value)}`)).json();
+    // Advertised names come from any device nearby; build options without parsing them as HTML
+    $("device").replaceChildren(...devices.map((d) => new Option(`${d.name || d.address} (${d.rssi} dBm)`, d.address)));
+    setStatus(devices.length ? t("web.found", { count: devices.length }) : t("msg.no_badge"));
+  } catch (error) {
+    setStatus(t("web.connect_failed", { error: error.message }), true);
+  }
+  $("scan").disabled = false;
+  update();
+}
+
+async function sendViaServer() {
+  setStatus(t("web.sending"));
+  const result = await post("send", { ...settings(), address: $("device").value });
+  if (result.error) setStatus(result.error, true);
+  else setStatus(t("web.sent", { count: result.count }));
+}
+
 async function send() {
   $("send").disabled = true;
+  if (!service) {
+    await sendViaServer();
+    update();
+    return;
+  }
   try {
     for (const write of writes) {
       const target = await characteristic(write.characteristic);
@@ -206,6 +242,7 @@ function changeDriver() {
   // Another badge type has other services; the old connection is useless
   disconnect();
   setStatus("");
+  $("device").innerHTML = "";
   const previous = $("mode").value;
   const modes = driver().modes;
   fillSelect("mode", modes, modes.includes(previous) ? previous : "static", (mode) => t(`mode.${mode}`));
@@ -225,7 +262,11 @@ async function init() {
   fillSelect("speed", [1, 2, 3, 4, 5, 6, 7, 8], 5);
   for (const id of ["text", "font", "mode", "brightness", "speed", "bold", "autoscroll"]) $(id).addEventListener("input", update);
   $("driver").addEventListener("input", changeDriver);
+  // Without Web Bluetooth (Firefox, Safari) only the server path is offered
+  $("connect").hidden = !navigator.bluetooth;
   $("connect").addEventListener("click", connect);
+  $("scan").addEventListener("click", scan);
+  $("device").addEventListener("input", update);
   $("send").addEventListener("click", send);
   changeDriver();
 }

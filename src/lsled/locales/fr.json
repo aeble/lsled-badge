@@ -63,5 +63,10 @@
  "opt.driver": "type de badge, par défaut lsled",
  "web.driver": "Type de badge",
  "err.mode_unsupported": "Le type de badge « {driver} » ne prend pas en charge le mode « {mode} ». Disponibles : {modes}",
- "err.device_not_found": "Badge {address} introuvable. Est-il allumé et à portée ? lsled scan liste les badges à proximité."
+ "err.device_not_found": "Badge {address} introuvable. Est-il allumé et à portée ? lsled scan liste les badges à proximité.",
+ "web.device": "Badge",
+ "web.scan": "Rechercher",
+ "web.scanning": "Recherche de badges…",
+ "web.found": "Badges trouvés : {count}",
+ "web.sending": "Envoi…"
 }

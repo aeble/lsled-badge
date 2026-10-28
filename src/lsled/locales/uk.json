@@ -63,5 +63,10 @@
  "opt.driver": "тип бейджа, типово lsled",
  "web.driver": "Тип бейджа",
  "err.mode_unsupported": "Тип бейджа «{driver}» не підтримує режим «{mode}». Доступні: {modes}",
- "err.device_not_found": "Бейдж {address} не знайдено. Чи він увімкнений і в зоні досяжності? lsled scan показує бейджі поблизу."
+ "err.device_not_found": "Бейдж {address} не знайдено. Чи він увімкнений і в зоні досяжності? lsled scan показує бейджі поблизу.",
+ "web.device": "Бейдж",
+ "web.scan": "Шукати",
+ "web.scanning": "Пошук бейджів…",
+ "web.found": "Знайдено бейджів: {count}",
+ "web.sending": "Надсилання…"
 }

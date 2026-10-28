@@ -42,7 +42,14 @@ Im statischen Modus wird der Text zentriert. Ist er zu breit, bricht `lsled` vor
 
 ## Weboberfläche
 
-`lsled web` startet einen lokalen Server und öffnet die Seite. Text, Font, Modus und Helligkeit lassen sich dort einstellen, die Vorschau folgt sofort. Senden geht nur in Chrome oder Edge, weil Safari und Firefox kein Web Bluetooth können. Die Seite holt Fonts und Displaykonstanten unter `/config.json` vom Server, beide Oberflächen nutzen also dieselben Fontdateien.
+`lsled web` startet einen lokalen Server und öffnet die Seite. Text, Font, Modus und Helligkeit lassen sich dort einstellen, die Vorschau folgt sofort.
+
+Gesendet wird auf einem von zwei Wegen:
+
+- **Über den Server** (jeder Browser): „Suchen“ listet die Badges in Reichweite, „Senden“ schickt über das Bluetooth des Rechners, auf dem `lsled web` läuft.
+- **Über den Browser** (Chrome, Edge und andere Chromium-Browser): „Badge verbinden“ nutzt Web Bluetooth. Der Knopf erscheint nur, wenn der Browser das kann; Firefox und Safari können es nicht.
+
+Besteht eine Browser-Verbindung, geht „Senden“ dorthin, sonst an das ausgewählte Badge über den Server. Die Seite holt Fonts und Displaykonstanten unter `/config.json` vom Server, beide Oberflächen nutzen also dieselben Fontdateien.
 
 ## Fonts
 
@@ -67,7 +74,7 @@ Fonts liegen als JSON in `src/lsled/fonts/`. Jede Glyphe ist eine Liste von Zeil
 lsled import-figlet "$(brew --prefix)/share/figlet/fonts/bdffonts/clr6x8.flf"
 ```
 
-Der Import schneidet leere Ränder ab und macht aus Festbreiten- Proportionalfonts. Brauchbar sind nur Fonts, die Pixel mit einem Füllzeichen zeichnen. Die üblichen figlet-Fonts wie `standard` oder `big` sind Strichzeichnungen und ergeben auf dem Display nichts Lesbares. In `bdffonts` haben nur `5x7`, `6x10` und die Helvetica-/Courier-Varianten Umlaute, `5x8.flf` hat einen fehlerhaften Kopf und lässt sich nicht einlesen.
+Der Import schneidet leere Ränder ab und macht aus Festbreiten- Proportionalfonts. Den Kommentarblock der `.flf`-Datei mit Copyright und Lizenz übernimmt er in das Feld `notice`; die Lizenzen der X11-Fonts verlangen, dass dieser Text mitgeliefert wird. Brauchbar sind nur Fonts, die Pixel mit einem Füllzeichen zeichnen. Die üblichen figlet-Fonts wie `standard` oder `big` sind Strichzeichnungen und ergeben auf dem Display nichts Lesbares. In `bdffonts` haben nur `5x7`, `6x10` und die Helvetica-/Courier-Varianten Umlaute, `5x8.flf` hat einen fehlerhaften Kopf und lässt sich nicht einlesen.
 
 ## Sprachen
 

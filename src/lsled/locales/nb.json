@@ -63,5 +63,10 @@
  "opt.driver": "skilttype, standard lsled",
  "web.driver": "Skilttype",
  "err.mode_unsupported": "Skilttypen «{driver}» støtter ikke modusen «{mode}». Tilgjengelige: {modes}",
- "err.device_not_found": "Fant ikke skiltet {address}. Er det slått på og innen rekkevidde? lsled scan viser skilt i nærheten."
+ "err.device_not_found": "Fant ikke skiltet {address}. Er det slått på og innen rekkevidde? lsled scan viser skilt i nærheten.",
+ "web.device": "Skilt",
+ "web.scan": "Søk",
+ "web.scanning": "Søker etter skilt…",
+ "web.found": "Fant skilt: {count}",
+ "web.sending": "Sender…"
 }

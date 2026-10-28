@@ -1,5 +1,6 @@
 {
  "description": "figlet 6x10.flf: Converted from 6x10.bdf by bdf2flf (by John Cowan <cowan@ccil.org>)",
+ "notice": "Converted from 6x10.bdf by bdf2flf (by John Cowan <cowan@ccil.org>)\nCOMMENT $XConsortium: 6x10.bdf,v 1.7 94/04/10 20:47:50 gildea Exp $\nCOMMENT Upper half by gildea April 1994\nFONT -Misc-Fixed-Medium-R-Normal--10-100-75-75-C-60-ISO8859-1SIZE 10 75 75\nFONTNAME_REGISTRY \"\"\nFOUNDRY \"Misc\"\nFAMILY_NAME \"Fixed\"\nWEIGHT_NAME \"Medium\"\nSLANT \"R\"\nSETWIDTH_NAME \"Normal\"\nADD_STYLE_NAME \"\"\nPIXEL_SIZE 10\nPOINT_SIZE 100\nRESOLUTION_X 75\nRESOLUTION_Y 75\nSPACING \"C\"\nAVERAGE_WIDTH 60\nFONT_ASCENT 8\nFONT_DESCENT 2\nDEFAULT_CHAR 0\nCOPYRIGHT \"Public domain terminal emulator font.  Share and enjoy.\"",
  "height": 10,
  "glyphs": {
   " ": [
