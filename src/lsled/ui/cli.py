@@ -25,7 +25,9 @@ def add_render_options(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("-f", "--font", default="5x9", help=t("opt.font"))
     parser.add_argument("--bold", action="store_true", help=t("opt.bold"))
     parser.add_argument("-m", "--mode", choices=ALL_MODES, default="static", help=t("opt.mode"))
-    parser.add_argument("--autoscroll", action="store_true", help=t("opt.autoscroll"))
+    overflow = parser.add_mutually_exclusive_group()
+    overflow.add_argument("--autoscroll", action="store_true", help=t("opt.autoscroll"))
+    overflow.add_argument("--pages", action="store_true", help=t("opt.pages"))
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -84,14 +86,17 @@ def main() -> int:
             server.serve(args.port)
         else:
             driver = DRIVERS[args.driver]
-            result = compose(args.text, args.font, args.bold, args.mode, args.autoscroll, driver)
+            overflow = "scroll" if args.autoscroll else "pages" if args.pages else "error"
+            result = compose(args.text, args.font, args.bold, args.mode, overflow, driver)
             if result.autoscrolled:
                 print(t("msg.autoscroll"))
-            print(format_preview(result.canvas))
+            if len(result.pages) > 1:
+                print(t("msg.paged", count=len(result.pages)))
+            print("\n".join(format_preview(canvas) for canvas in result.pages))
             if args.command == "send":
                 if not args.address:
                     parser.error(t("err.no_address"))
-                writes = driver.build_writes(result.canvas, result.mode, args.speed, args.brightness)
+                writes = driver.build_writes(result.pages, result.mode, args.speed, args.brightness)
                 asyncio.run(ble.execute(args.address, driver, writes))
                 print(t("msg.sent", count=len(writes), address=args.address))
     except LocalizedError as error:

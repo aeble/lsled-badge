@@ -9,7 +9,7 @@ from urllib.parse import parse_qs, urlparse
 
 from bleak.exc import BleakError
 
-from ..app import compose
+from ..app import OVERFLOW, compose
 from ..core.fonts import available_fonts, load_font
 from ..core.i18n import FALLBACK, LocalizedError, available_languages, load_messages, t
 from ..drivers import DEFAULT_DRIVER, DRIVERS
@@ -40,6 +40,7 @@ def web_config() -> dict:
             for name, driver in DRIVERS.items()
         },
         "fonts": {name: load_font(name).description for name in available_fonts()},
+        "overflow": list(OVERFLOW),
         "messages": {language: load_messages(language) for language in available_languages()},
     }
 
@@ -51,8 +52,8 @@ def messages_for(request: dict) -> dict[str, str]:
 
 def prepare(request: dict):
     driver = DRIVERS[request["driver"]]
-    result = compose(request["text"], request["font"], request["bold"], request["mode"], request["autoscroll"], driver)
-    writes = driver.build_writes(result.canvas, result.mode, request["speed"], request["brightness"])
+    result = compose(request["text"], request["font"], request["bold"], request["mode"], request["overflow"], driver)
+    writes = driver.build_writes(result.pages, result.mode, request["speed"], request["brightness"])
     return driver, result, writes
 
 
@@ -62,7 +63,7 @@ def render(request: dict) -> dict:
     except LocalizedError as error:
         return {"error": error.translate(messages_for(request), WEB_KEYS.get(error.key))}
     return {
-        "canvas": result.canvas,
+        "pages": result.pages,
         "mode": result.mode,
         "textWidth": result.text_width,
         "autoscrolled": result.autoscrolled,

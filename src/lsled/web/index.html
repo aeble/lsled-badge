@@ -52,7 +52,7 @@
       <label><span data-i18n="web.brightness"></span> <select id="brightness"></select></label>
       <label><span data-i18n="web.speed"></span> <select id="speed"></select></label>
       <label class="check"><input type="checkbox" id="bold"> <span data-i18n="web.bold"></span></label>
-      <label class="check"><input type="checkbox" id="autoscroll"> <span data-i18n="web.autoscroll"></span></label>
+      <label><span data-i18n="web.overflow"></span> <select id="overflow"></select></label>
     </div>
     <div class="actions">
       <button class="secondary" id="scan" data-i18n="web.scan"></button>
@@ -65,7 +65,7 @@
 <script>
 const $ = (id) => document.getElementById(id);
 const PIXEL = 14;
-let config, messages, language, service = null, canvasRows = null, writes = null, renderSeq = 0;
+let config, messages, language, service = null, writes = null, renderSeq = 0;
 const characteristics = new Map();
 
 const t = (key, values = {}) => messages[key].replace(/\{(\w+)\}/g, (_, name) => values[name]);
@@ -86,7 +86,9 @@ function pickLanguage(available) {
   return "en";
 }
 
-function draw(canvas) {
+function draw(pages) {
+  // Pages are drawn below each other, separated by one empty pixel row
+  const canvas = pages.flatMap((page, i) => (i ? [new Array(page[0].length).fill(null), ...page] : page));
   const el = $("display");
   const css = getComputedStyle(document.documentElement);
   const width = canvas[0].length;
@@ -98,6 +100,7 @@ function draw(canvas) {
   // Rough brightness simulation; 25 % stays clearly visible
   const alpha = 0.4 + 0.6 * Number($("brightness").value) / 100;
   canvas.forEach((row, y) => row.forEach((p, x) => {
+    if (p === null) return;
     ctx.globalAlpha = p ? alpha : 1;
     ctx.fillStyle = p ? css.getPropertyValue("--led-on") : css.getPropertyValue("--led-off");
     ctx.beginPath();
@@ -114,7 +117,7 @@ function showHint(message, isError) {
 function settings() {
   return {
     text: $("text").value, font: $("font").value, bold: $("bold").checked,
-    mode: $("mode").value, autoscroll: $("autoscroll").checked, driver: $("driver").value,
+    mode: $("mode").value, overflow: $("overflow").value, driver: $("driver").value,
     speed: Number($("speed").value), brightness: Number($("brightness").value), language,
   };
 }
@@ -132,14 +135,15 @@ async function update() {
   const result = await post("render", settings());
   if (seq !== renderSeq) return;
   if (result.error) {
-    canvasRows = writes = null;
+    writes = null;
     showHint(result.error, true);
   } else {
-    canvasRows = result.canvas;
     writes = result.writes;
-    draw(canvasRows);
+    draw(result.pages);
     const width = result.textWidth, usable = result.usableWidth;
-    showHint(usable !== null
+    showHint(result.pages.length > 1
+      ? t("web.paged", { count: result.pages.length, usable })
+      : usable !== null
       ? t("web.used", { width, usable })
       : t(result.autoscrolled ? "web.autoscrolled" : "web.scrolling", { width }), false);
   }
@@ -260,7 +264,8 @@ async function init() {
   for (const option of $("font").options) option.title = config.fonts[option.value];
   fillSelect("brightness", [100, 75, 50, 25], 25, (v) => `${v} %`);
   fillSelect("speed", [1, 2, 3, 4, 5, 6, 7, 8], 5);
-  for (const id of ["text", "font", "mode", "brightness", "speed", "bold", "autoscroll"]) $(id).addEventListener("input", update);
+  fillSelect("overflow", config.overflow, "error", (choice) => t(`overflow.${choice}`));
+  for (const id of ["text", "font", "mode", "brightness", "speed", "bold", "overflow"]) $(id).addEventListener("input", update);
   $("driver").addEventListener("input", changeDriver);
   // Without Web Bluetooth (Firefox, Safari) only the server path is offered
   $("connect").hidden = !navigator.bluetooth;

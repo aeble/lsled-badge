@@ -25,6 +25,7 @@ lsled send Balrog                           # Vorschau zeigen und senden
 lsled send -f helv --bold -b 50 Balrog      # anderer Font, fett, 50 % Helligkeit
 lsled send -m left -s 3 "Ein langer Text"   # durchlaufen lassen, Geschwindigkeit 3
 lsled send --autoscroll "Text"              # statisch, wenn er passt, sonst durchlaufen
+lsled send --pages -m up "Ein langer Text"  # zu breit: eine Seite pro Bildschirm, nacheinander
 lsled fonts                                 # vorhandene Fonts
 lsled web                                   # Weboberfläche auf http://localhost:8044/
 ```
@@ -35,12 +36,13 @@ lsled web                                   # Weboberfläche auf http://localhos
 | `-f`, `--font` | siehe `lsled fonts` | `5x9` |
 | `--bold` | jede Glyphe eine Spalte breiter | aus |
 | `--autoscroll` | nach links laufen, wenn der Text nicht aufs Display passt | aus |
+| `--pages` | Text, der nicht passt, an Leerzeichen auf nacheinander gezeigte Seiten verteilen (LSLED: bis 8) | aus |
 | `-m`, `--mode` | `static`, `left`, `right`, `up`, `down`, `animation`, `snowflake`, `picture`, `laser` | `static` |
 | `-b`, `--brightness` | 1–100 (Prozent; LSLED kennt nur 25/50/75/100 und nimmt die nächste Stufe) | 25 |
 | `-s`, `--speed` | 1–8 | 5 |
 | `-a`, `--address` | BLE-Adresse (macOS: UUID) | `$LSLED_ADDR` |
 
-Bei `left` und `right` lässt das Badge den Text durchlaufen, egal wie breit er ist. Alle anderen Modi zeigen einen Bildschirm: Der Text wird zentriert und muss aufs Display passen. Ist er zu breit, bricht `lsled` vor dem Senden ab, mit `--autoscroll` läuft er stattdessen nach links durch. In der Weboberfläche heißt der Schalter „durchlaufen, wenn zu breit“.
+Bei `left` und `right` lässt das Badge den Text durchlaufen, egal wie breit er ist. Alle anderen Modi zeigen einen Bildschirm: Der Text wird zentriert und muss aufs Display passen. Ist er zu breit, bricht `lsled` vor dem Senden ab. Mit `--autoscroll` läuft er stattdessen nach links durch, mit `--pages` wird er an Leerzeichen auf Seiten verteilt, die das Badge im gewählten Modus nacheinander zeigt, alle auf derselben Grundlinie. Die Weboberfläche bietet dieselbe Wahl unter „Wenn zu breit“.
 
 ## Weboberfläche
 
@@ -124,11 +126,11 @@ Ein Datensatz besteht aus 64 Byte Kopf und der Bitmap, aufgefüllt auf ein Vielf
 |:---|:---|
 | 0–3 | `wang` |
 | 5 | Helligkeit: `0x00` 100 %, `0x10` 75 %, `0x20` 50 %, `0x40` 25 % |
-| 8 | Nachricht 1: Geschwindigkeit (0–7) im oberen, Modus im unteren Halbbyte |
-| 16–17 | Länge von Nachricht 1 in Kacheln, Big Endian |
+| 8–15 | Nachricht 1–8: Geschwindigkeit (0–7) im oberen, Modus im unteren Halbbyte |
+| 16–31 | Länge von Nachricht 1–8 in Kacheln, Big Endian, je zwei Byte |
 | 38–43 | Zeitstempel: Jahr (zweistellig), Monat, Tag, Stunde, Minute, Sekunde |
 
-Die Bitmap besteht aus Kacheln zu 8 Spalten × 11 Zeilen, ein Byte pro Zeile, höchstwertiges Bit links.
+Die Bitmaps aller Nachrichten folgen direkt aufeinander. Eine Bitmap besteht aus Kacheln zu 8 Spalten × 11 Zeilen, ein Byte pro Zeile, höchstwertiges Bit links. Das Badge zeigt die Nachrichten von selbst nacheinander (getestet mit drei). Im Modus `animation` spielt eine Bitmap aus mehreren Bildern zu 48 Spalten als Animation ab (getestet mit drei).
 
 ⚠ Im Modus `static` zeigt das Badge Bitmap-Spalte n auf Displayspalte n+2 (gemessen). Der Treiber gleicht das aus (`x_shift` in `drivers/lsled.py`). Die Displayspalten 0 und 1 sind statisch nicht erreichbar, nutzbar sind 42 Spalten. `up`, `down`, `animation`, `snowflake`, `picture` und `laser` zeigen die Bitmap unverschoben (gemessen), nutzbar sind alle 44 Spalten; was breiter ist, wird abgeschnitten.
 

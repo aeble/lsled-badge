@@ -64,8 +64,9 @@ class TimHodsonDriver(Driver):
     service_uuid = SERVICE_UUID
     notify_characteristics = (NOTIFY,)
 
-    def build_writes(self, canvas: list[list[int]], mode: str, speed: int, brightness: int) -> list[Write]:
-        data = encode_cells(canvas)
+    def build_writes(self, pages: list[list[list[int]]], mode: str, speed: int, brightness: int) -> list[Write]:
+        # max_messages is 1: the PLAY command may show image sequences, but that is untested
+        data = encode_cells(pages[0])
         # Pause after DATS stands in for waiting on the DATSOK notification
         writes = [Write(COMMAND, command("DATS", len(data) >> 8, len(data) & 0xFF, 0, 0), pause=0.5)]
         for offset in range(0, len(data), CHUNK):

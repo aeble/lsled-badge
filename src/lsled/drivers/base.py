@@ -1,4 +1,4 @@
-"""Driver interface: turns a pixel canvas into the GATT writes one badge type expects."""
+"""Driver interface: turns pixel canvases into the GATT writes one badge type expects."""
 from dataclasses import dataclass
 
 from ..core.render import Display
@@ -25,6 +25,8 @@ class Driver:
     scroll_modes: tuple[str, ...] = ("left", "right")
     # Columns the badge shifts one-screen content to the right, per mode
     x_shift: dict[str, int] = {}
+    # Messages one transmission can hold; the badge shows them one after another
+    max_messages: int = 1
 
     def is_fixed(self, mode: str) -> bool:
         return mode not in self.scroll_modes
@@ -35,6 +37,6 @@ class Driver:
     def matches(self, name: str | None, service_uuids: list[str]) -> bool:
         return self.service_uuid in service_uuids or (name or "").upper().startswith(self.name_prefixes)
 
-    def build_writes(self, canvas: list[list[int]], mode: str, speed: int, brightness: int) -> list[Write]:
-        """canvas from core.render.layout; speed 1-8; brightness in percent (1-100)."""
+    def build_writes(self, pages: list[list[list[int]]], mode: str, speed: int, brightness: int) -> list[Write]:
+        """One canvas from core.render.layout per message; speed 1-8; brightness in percent (1-100)."""
         raise NotImplementedError

@@ -25,6 +25,7 @@ lsled send Balrog                           # show the preview and send
 lsled send -f helv --bold -b 50 Balrog      # other font, bold, 50 % brightness
 lsled send -m left -s 3 "A longer text"     # scroll, speed 3
 lsled send --autoscroll "Text"              # static if it fits, otherwise scroll
+lsled send --pages -m up "A longer text"    # too wide: one page per screen, shown in turn
 lsled fonts                                 # available fonts
 lsled web                                   # web interface on http://localhost:8044/
 ```
@@ -35,12 +36,13 @@ lsled web                                   # web interface on http://localhost:
 | `-f`, `--font` | see `lsled fonts` | `5x9` |
 | `--bold` | every glyph one column wider | off |
 | `--autoscroll` | scroll left if the text does not fit on the display | off |
+| `--pages` | split text that does not fit at spaces into pages shown in turn (LSLED: up to 8) | off |
 | `-m`, `--mode` | `static`, `left`, `right`, `up`, `down`, `animation`, `snowflake`, `picture`, `laser` | `static` |
 | `-b`, `--brightness` | 1–100 (percent; LSLED only knows 25/50/75/100 and takes the nearest step) | 25 |
 | `-s`, `--speed` | 1–8 | 5 |
 | `-a`, `--address` | BLE address (macOS: UUID) | `$LSLED_ADDR` |
 
-In `left` and `right` the badge scrolls the text, whatever its width. All other modes show one screen: the text is centered and must fit. If it is too wide, `lsled` stops before sending; with `--autoscroll` it scrolls left instead. The web interface calls this toggle “scroll if too wide”.
+In `left` and `right` the badge scrolls the text, whatever its width. All other modes show one screen: the text is centered and must fit. If it is too wide, `lsled` stops before sending; with `--autoscroll` it scrolls left instead, and with `--pages` it is split at spaces into pages that the badge shows one after another in the chosen mode, all on a common baseline. The web interface offers the same choice under “If too wide”.
 
 ## Web interface
 
@@ -124,11 +126,11 @@ A record consists of a 64-byte header and the bitmap, padded to a multiple of 16
 |:---|:---|
 | 0–3 | `wang` |
 | 5 | brightness: `0x00` 100 %, `0x10` 75 %, `0x20` 50 %, `0x40` 25 % |
-| 8 | message 1: speed (0–7) in the upper, mode in the lower nibble |
-| 16–17 | length of message 1 in tiles, big endian |
+| 8–15 | messages 1–8: speed (0–7) in the upper, mode in the lower nibble |
+| 16–31 | lengths of messages 1–8 in tiles, big endian, two bytes each |
 | 38–43 | timestamp: year (two digits), month, day, hour, minute, second |
 
-The bitmap consists of tiles of 8 columns × 11 rows, one byte per row, most significant bit on the left.
+The bitmaps of all messages follow one after another. A bitmap consists of tiles of 8 columns × 11 rows, one byte per row, most significant bit on the left. The badge shows the messages in turn by itself (tested with three). In `animation` mode, a bitmap of several 48-column frames plays as an animation (tested with three).
 
 ⚠ In `static` mode the badge shows bitmap column n on display column n+2 (measured). The driver compensates (`x_shift` in `drivers/lsled.py`). Display columns 0 and 1 cannot be reached in static mode; 42 columns are usable. `up`, `down`, `animation`, `snowflake`, `picture` and `laser` show the bitmap unshifted (measured), with all 44 columns usable; wider content is cut off.
 

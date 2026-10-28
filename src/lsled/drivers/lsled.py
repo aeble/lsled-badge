@@ -43,13 +43,13 @@ class LsledDriver(Driver):
     # Measured on a 44x11 badge: in static mode, bitmap column n appears on display column n+2;
     # up, down, animation, snowflake, picture and laser show the bitmap unshifted
     x_shift = {"static": 2}
+    # The header has mode and length fields for eight messages
+    max_messages = 8
     service_uuid = SERVICE_UUID
     name_prefixes = ("LSLED",)
 
-    def build_writes(self, canvas: list[list[int]], mode: str, speed: int, brightness: int) -> list[Write]:
+    def build_writes(self, pages: list[list[list[int]]], mode: str, speed: int, brightness: int) -> list[Write]:
         shift = self.x_shift.get(mode, 0)
-        canvas = [row[shift:] for row in canvas]
-        bitmap, tiles = encode_tiles(canvas)
         # The badge only knows four steps; take the nearest, ties go to the brighter one
         level = min(BRIGHTNESS, key=lambda step: (abs(step - brightness), -step))
 
@@ -57,10 +57,15 @@ class LsledDriver(Driver):
         header = bytearray(64)
         header[0:4] = b"wang"
         header[5] = BRIGHTNESS[level]
-        header[8] = (speed - 1) << 4 | MODES[mode]  # message 1
-        header[16:18] = tiles.to_bytes(2, "big")  # length of message 1 in tiles
+        bitmaps = b""
+        for index, canvas in enumerate(pages):
+            bitmap, tiles = encode_tiles([row[shift:] for row in canvas])
+            header[8 + index] = (speed - 1) << 4 | MODES[mode]
+            # Message lengths in tiles, big endian, from byte 16 on
+            header[16 + 2 * index:18 + 2 * index] = tiles.to_bytes(2, "big")
+            bitmaps += bitmap
         header[38:44] = bytes([now.year % 100, now.month, now.day, now.hour, now.minute, now.second])
 
-        data = bytes(header) + bitmap
+        data = bytes(header) + bitmaps
         data += bytes(-len(data) % 16)
         return [Write(CHAR_UUID, data[i:i + 16]) for i in range(0, len(data), 16)]

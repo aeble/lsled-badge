@@ -14,6 +14,13 @@ def text_width(text_rows: list[list[int]]) -> int:
     return len(text_rows[0]) if text_rows else 0
 
 
+def lit_rows(text_rows: list[list[int]]) -> slice:
+    """Rows that actually light up; centering these instead of the font box keeps text without
+    descenders from sitting high and capitals in fonts with room for accents from sitting low."""
+    lit = [y for y, row in enumerate(text_rows) if any(row)]
+    return slice(lit[0], lit[-1] + 1) if lit else slice(None)
+
+
 def layout(text_rows: list[list[int]], display: Display, fixed: bool, x_shift: int = 0) -> list[list[int]]:
     """Place the text on the display height.
 
@@ -36,12 +43,6 @@ def layout(text_rows: list[list[int]], display: Display, fixed: bool, x_shift: i
         left = 0
         canvas_width = width
 
-    # Center the rows that actually light up, not the font box: otherwise text without descenders
-    # sits high, and fonts with room for accents above capitals push them down
-    lit = [y for y, row in enumerate(text_rows) if any(row)]
-    if lit:
-        text_rows = text_rows[lit[0]:lit[-1] + 1]
-        height = len(text_rows)
     top = (display.height - height) // 2
     canvas = [[0] * canvas_width for _ in range(display.height)]
     for y, row in enumerate(text_rows):
