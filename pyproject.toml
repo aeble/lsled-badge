@@ -3,6 +3,8 @@ name = "lsled-badge"
 version = "0.1.0"
 description = "LSLED-Namensbadges (BLE-Service fee0) mit Text bespielen, mit Vorschau in Terminal und Browser"
 readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [
     { name = "Axel Eble", email = "git@eble.name" }
 ]

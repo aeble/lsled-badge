@@ -1,131 +1,140 @@
 # lsled-badge
 
-Text auf LED-Namensbadges vom Typ LSLED schicken, mit Vorschau im Terminal und im Browser.
+**English** · [Deutsch](README.de.md)
 
-Gemeint sind die Badges, die sich per BLE als `LSLED` melden und den Service `fee0` mit der Characteristic `fee1` anbieten (dieselben, die die Badge-Magic-App steuert). Das Protokoll schickt Klartext-Pakete mit dem Header `wang`. Getestet mit einem Badge mit 44×11 Pixeln.
+Send text to LSLED name badges over Bluetooth LE, with a preview in the terminal and in the browser.
+
+This targets the badges that advertise as `LSLED` and offer service `fee0` with characteristic `fee1` (the ones the Badge Magic app controls). The protocol sends plaintext packets with the header `wang`. Tested with a 44×11 pixel badge.
 
 ## Installation
 
 ```bash
-uv pip install -e ~/Documents/lsled-badge
+uv tool install git+https://github.com/aeble/lsled-badge
 ```
 
-Python 3.10 oder neuer, Abhängigkeiten `bleak` und `pycryptodome` (für den Treiber `timhodson`).
+Python 3.10 or newer; dependencies are `bleak` and `pycryptodome` (for the `timhodson` driver).
 
-## Benutzung
+## Usage
 
 ```bash
-lsled scan                                  # Badges in Reichweite mit Adresse
-export LSLED_ADDR=<Adresse aus lsled scan>
+lsled scan                                  # badges in range, with address
+export LSLED_ADDR=<address from lsled scan>
 
-lsled preview Balrog                        # nur Vorschau
-lsled send Balrog                           # Vorschau zeigen und senden
-lsled send -f helv --bold -b 50 Balrog      # anderer Font, fett, 50 % Helligkeit
-lsled send -m left -s 3 "Ein langer Text"   # durchlaufen lassen, Geschwindigkeit 3
-lsled send --autoscroll "Text"              # statisch, wenn er passt, sonst durchlaufen
-lsled fonts                                 # vorhandene Fonts
-lsled web                                   # Weboberfläche auf http://localhost:8044/
+lsled preview Balrog                        # preview only
+lsled send Balrog                           # show the preview and send
+lsled send -f helv --bold -b 50 Balrog      # other font, bold, 50 % brightness
+lsled send -m left -s 3 "A longer text"     # scroll, speed 3
+lsled send --autoscroll "Text"              # static if it fits, otherwise scroll
+lsled fonts                                 # available fonts
+lsled web                                   # web interface on http://localhost:8044/
 ```
 
-| Option | Werte | Standard |
+| Option | Values | Default |
 |:---|:---|:---|
-| `-d`, `--driver` | Badge-Typ, siehe Abschnitt Treiber | `lsled` |
-| `-f`, `--font` | siehe `lsled fonts` | `5x9` |
-| `--bold` | jede Glyphe eine Spalte breiter | aus |
-| `--autoscroll` | bei `static` nach links laufen, wenn der Text nicht passt | aus |
+| `-d`, `--driver` | badge type, see Drivers | `lsled` |
+| `-f`, `--font` | see `lsled fonts` | `5x9` |
+| `--bold` | every glyph one column wider | off |
+| `--autoscroll` | with `static`, scroll left if the text does not fit | off |
 | `-m`, `--mode` | `static`, `left`, `right`, `up`, `down`, `animation`, `snowflake`, `picture`, `laser` | `static` |
-| `-b`, `--brightness` | 1–100 (Prozent; LSLED kennt nur 25/50/75/100 und nimmt die nächste Stufe) | 25 |
+| `-b`, `--brightness` | 1–100 (percent; LSLED only knows 25/50/75/100 and takes the nearest step) | 25 |
 | `-s`, `--speed` | 1–8 | 5 |
-| `-a`, `--address` | BLE-Adresse (macOS: UUID) | `$LSLED_ADDR` |
+| `-a`, `--address` | BLE address (macOS: UUID) | `$LSLED_ADDR` |
 
-Im statischen Modus wird der Text zentriert. Ist er zu breit, bricht `lsled` vor dem Senden ab, mit `--autoscroll` läuft er stattdessen nach links durch. In der Weboberfläche heißt der Schalter „durchlaufen, wenn zu breit“.
+In static mode the text is centered. If it is too wide, `lsled` stops before sending; with `--autoscroll` it scrolls left instead. The web interface calls this toggle “scroll if too wide”.
 
-## Weboberfläche
+## Web interface
 
-`lsled web` startet einen lokalen Server und öffnet die Seite. Text, Font, Modus und Helligkeit lassen sich dort einstellen, die Vorschau folgt sofort.
+`lsled web` starts a local server and opens the page. Text, font, mode and brightness can be set there, and the preview follows immediately.
 
-Gesendet wird auf einem von zwei Wegen:
+There are two ways to send:
 
-- **Über den Server** (jeder Browser): „Suchen“ listet die Badges in Reichweite, „Senden“ schickt über das Bluetooth des Rechners, auf dem `lsled web` läuft.
-- **Über den Browser** (Chrome, Edge und andere Chromium-Browser): „Badge verbinden“ nutzt Web Bluetooth. Der Knopf erscheint nur, wenn der Browser das kann; Firefox und Safari können es nicht.
+- **Through the server** (any browser): “Search” lists the badges in range, “Send” transmits via the Bluetooth of the machine running `lsled web`.
+- **Through the browser** (Chrome, Edge and other Chromium browsers): “Connect badge” uses Web Bluetooth. The button only appears if the browser supports it; Firefox and Safari do not.
 
-Besteht eine Browser-Verbindung, geht „Senden“ dorthin, sonst an das ausgewählte Badge über den Server. Die Seite holt Fonts und Displaykonstanten unter `/config.json` vom Server, beide Oberflächen nutzen also dieselben Fontdateien.
+With a browser connection, “Send” goes there; otherwise it goes to the selected badge through the server. The page fetches fonts and display constants from `/config.json`, so both interfaces use the same font files.
 
 ## Fonts
 
-Fonts liegen als JSON in `src/lsled/fonts/`. Jede Glyphe ist eine Liste von Zeilen aus `#` (Pixel an) und `.` (aus), alle Zeilen einer Glyphe gleich breit. Glyphen dürfen unterschiedlich breit sein; zwischen zwei Zeichen setzt der Renderer eine leere Spalte. Fehlt einem Font ein Kleinbuchstabe, nimmt er den Großbuchstaben.
+Fonts are JSON files in `src/lsled/fonts/`. Each glyph is a list of rows made of `#` (pixel on) and `.` (off), all rows of a glyph equally wide. Glyphs may differ in width; the renderer puts one empty column between characters. If a font lacks a lower-case letter, the capital is used.
 
 ```json
 "l": ["##.", ".#.", ".#.", ".#.", ".#.", ".#.", "###", "...", "..."]
 ```
 
-| Font | Höhe | Art |
+| Font | Height | Style |
 |:---|:---|:---|
-| `5x9` | 9 | Standard, Groß- und Kleinbuchstaben mit Unterlängen, Umlaute, ♥ |
-| `5x9-mono` | 9 | `5x9` mit fester Breite von 5 Pixeln |
-| `5x9-italic` | 9 | `5x9` schräg, alle drei Zeilen eine Spalte |
-| `3x5` | 5 | klein, nur Großbuchstaben und Ziffern |
-| `block` | 10 | `3x5` mit 2×2-Pixeln, schwer und gut lesbar aus der Ferne |
-| `space` | 11 | Sci-Fi-Großbuchstaben mit abgeschrägten Ecken, Umlaute, ★ ♥ 🚀; zum Durchlaufen gedacht |
+| `5x9` | 9 | default, upper and lower case with descenders, umlauts, ♥ |
+| `5x9-mono` | 9 | `5x9` with a fixed width of 5 pixels |
+| `5x9-italic` | 9 | `5x9` slanted, one column per three rows |
+| `3x5` | 5 | small, capitals and digits only |
+| `block` | 10 | `3x5` with 2×2 pixels, heavy and readable from afar |
+| `space` | 11 | sci-fi capitals with chamfered corners, umlauts, ★ ♥ 🚀; made for scrolling |
 
-`--bold` funktioniert mit jedem Font. `5x9`, `3x5` und `space` sind von Hand gezeichnet, `5x9-mono`, `5x9-italic` und `block` daraus abgeleitet. Die übrigen stammen aus den Pixelfonts, die figlet unter `share/figlet/fonts/bdffonts` mitliefert (X11 Misc-Fixed, Schumacher Clean, Adobe Helvetica). Weitere lassen sich übernehmen:
+`--bold` works with every font. `5x9`, `3x5` and `space` are hand-drawn; `5x9-mono`, `5x9-italic` and `block` are derived from them. The others come from the pixel fonts that figlet ships in `share/figlet/fonts/bdffonts` (X11 Misc-Fixed, Schumacher Clean, Adobe Helvetica). More can be imported:
 
 ```bash
 lsled import-figlet "$(brew --prefix)/share/figlet/fonts/bdffonts/clr6x8.flf"
 ```
 
-Der Import schneidet leere Ränder ab und macht aus Festbreiten- Proportionalfonts. Den Kommentarblock der `.flf`-Datei mit Copyright und Lizenz übernimmt er in das Feld `notice`; die Lizenzen der X11-Fonts verlangen, dass dieser Text mitgeliefert wird. Brauchbar sind nur Fonts, die Pixel mit einem Füllzeichen zeichnen. Die üblichen figlet-Fonts wie `standard` oder `big` sind Strichzeichnungen und ergeben auf dem Display nichts Lesbares. In `bdffonts` haben nur `5x7`, `6x10` und die Helvetica-/Courier-Varianten Umlaute, `5x8.flf` hat einen fehlerhaften Kopf und lässt sich nicht einlesen.
+The import strips empty borders and turns fixed-width fonts into proportional ones. It copies the comment block of the `.flf` file, which holds copyright and license, into the `notice` field; the licenses of the X11 fonts require that this text is distributed with them. Only fonts that draw pixels with a fill character are useful. The usual figlet fonts such as `standard` or `big` are line drawings and come out unreadable on the display. In `bdffonts`, only `5x7`, `6x10` and the Helvetica/Courier variants have umlauts; `5x8.flf` has a broken header and cannot be read.
 
-## Sprachen
+## Languages
 
-Englisch, Deutsch, Französisch, Spanisch, Portugiesisch, Finnisch, Estnisch, Lettisch, Litauisch, Schwedisch, Norwegisch (Bokmål), Dänisch, Niederländisch, Ukrainisch, vereinfachtes Chinesisch, Japanisch und Koreanisch. Die Kataloge liegen als JSON in `src/lsled/locales/`, CLI und Weboberfläche lesen dieselben Dateien. Fehlt in einem Katalog ein Schlüssel, steht der englische Text da.
+English, German, French, Spanish, Portuguese, Finnish, Estonian, Latvian, Lithuanian, Swedish, Norwegian (Bokmål), Danish, Dutch, Ukrainian, Simplified Chinese, Japanese and Korean. The catalogs are JSON files in `src/lsled/locales/`; the command line and the web interface read the same files. A key missing from a catalog falls back to the English text.
 
-Die CLI nimmt die erste passende Sprache aus `LANGUAGE`, `LC_ALL`, `LC_MESSAGES` und `LANG` (wie gettext), unter macOS ohne gesetzte Variablen `AppleLocale`. Die Weboberfläche nimmt die Browsersprachen. `no` und `nn` gelten als Bokmål, `zh-CN`/`zh-SG`/`zh-Hans` als vereinfachtes Chinesisch; traditionelles Chinesisch und alles Unbekannte fällt auf Englisch.
+The command line takes the first matching language from `LANGUAGE`, `LC_ALL`, `LC_MESSAGES` and `LANG` (like gettext), and on macOS without any of them set, `AppleLocale`. The web interface uses the browser languages. `no` and `nn` count as Bokmål, `zh-CN`/`zh-SG`/`zh-Hans` as Simplified Chinese; Traditional Chinese and anything unknown fall back to English.
 
 ```bash
 LANG=ja_JP.UTF-8 lsled --help
 ```
 
-Die festen Texte von argparse (`usage:`, `options:`, `show this help message and exit`) bleiben englisch.
+The fixed texts of argparse (`usage:`, `options:`, `show this help message and exit`) stay English.
 
-## Aufbau
+## Structure
 
 ```
 src/lsled/
-  core/        fonts.py, figlet.py, render.py, i18n.py   Text -> Pixel, Layout, Übersetzungen
-  drivers/     base.py, lsled.py, timhodson.py           Pixel -> Schreibvorgänge je Badge-Typ, ohne I/O
-  transport/   ble.py                                    bleak: Scan, Schreibvorgänge ausführen
-  app.py                                                 gemeinsamer Ablauf für CLI und Server
-  ui/          cli.py, preview.py, server.py             Kommandozeile, Terminal-Vorschau, HTTP-API
-  web/         index.html                                Darstellung, Bedienung, Web Bluetooth
-  fonts/, locales/                                       Daten
+  core/        fonts.py, figlet.py, render.py, i18n.py   text -> pixels, layout, translations
+  drivers/     base.py, lsled.py, timhodson.py           pixels -> writes per badge type, no I/O
+  transport/   ble.py                                    bleak: scan, execute writes
+  app.py                                                 shared flow for command line and server
+  ui/          cli.py, preview.py, server.py             command line, terminal preview, HTTP API
+  web/         index.html                                display, controls, optional Web Bluetooth
+  fonts/, locales/                                       data
 ```
 
-Abhängigkeiten zeigen nur nach unten: `ui` → `app` → `drivers`/`transport` → `core`. Die Webseite rechnet nichts selbst: Sie schickt ihre Einstellungen an `POST /render` und bekommt Pixelfläche, verwendeten Modus und die fertige Liste der Schreibvorgänge zurück, die sie per Web Bluetooth ausführt.
+Dependencies only point downwards: `ui` → `app` → `drivers`/`transport` → `core`. The web page computes nothing itself: it posts its settings to `POST /render` and gets back the canvas, the mode actually used and the finished list of writes. It executes them via Web Bluetooth, or has the server send them via `POST /send`.
 
-## Treiber
+## Drivers
 
-Ein Treiber (`drivers/base.py`) beschreibt Displaygröße, Modi, Erkennung beim Scan und die Characteristics, deren Benachrichtigungen vor dem Schreiben eingeschaltet sein müssen. `build_writes()` macht aus Pixelfläche, Modus, Geschwindigkeit (1–8) und Helligkeit (Prozent) eine Liste von Schreibvorgängen (Characteristic, Bytes, mit/ohne Antwort, Pause danach). Neue Badge-Typen sind eine neue Datei in `drivers/` plus Eintrag in `drivers/__init__.py`.
+A driver (`drivers/base.py`) describes the display size, modes, how a scan recognizes the badge, and the characteristics whose notifications must be enabled before writing. `build_writes()` turns canvas, mode, speed (1–8) and brightness (percent) into a list of writes (characteristic, bytes, with or without response, pause afterwards). A new badge type is a new file in `drivers/` plus an entry in `drivers/__init__.py`.
 
-| Treiber | Badge | Display |
+| Driver | Badge | Display |
 |:---|:---|:---|
-| `lsled` | LSLED, Service `fee0`, Klartextprotokoll „wang“ | 44×11, gemessen |
-| `timhodson` | Service `fee9`, AES-verschlüsselte Befehle | 48×12 laut Typkennung `STYPE12X48N` |
+| `lsled` | LSLED, service `fee0`, plaintext protocol “wang” | 44×11, measured |
+| `timhodson` | service `fee9`, AES-encrypted commands | 48×12 per type string `STYPE12X48N` |
 
-⚠ `timhodson` ist am Gerät nicht getestet. Protokoll, Schlüssel und Zellkodierung stammen aus [timhodson/ble-led-badge](https://github.com/timhodson/ble-led-badge) (MIT). Geprüft ist, dass Befehle, Datenpakete und die Kodierung aller 150 Zeichensegmente seines Fonts byte-gleich mit seinem Code sind. Offen sind die Verschiebung im statischen Modus, die Richtung der Geschwindigkeit (1–8 wird auf 0–255 verteilt) und ob die feste Pause nach `DATS` statt des Wartens auf `DATSOK` reicht.
+⚠ `timhodson` is untested on hardware. Protocol, key and cell encoding come from [timhodson/ble-led-badge](https://github.com/timhodson/ble-led-badge). Verified: commands, data packets and the encoding of all 150 glyph segments of its font are byte-identical with that code. Open: the offset in static mode, the direction of the speed value (1–8 is spread over 0–255), and whether the fixed pause after `DATS` can replace waiting for `DATSOK`.
 
-## LSLED-Protokoll
+## LSLED protocol
 
-Ein Datensatz besteht aus 64 Byte Kopf und der Bitmap, aufgefüllt auf ein Vielfaches von 16 und in 16-Byte-Paketen auf `fee1` geschrieben (mit Antwort).
+A record consists of a 64-byte header and the bitmap, padded to a multiple of 16 and written to `fee1` in 16-byte packets (with response).
 
-| Byte | Inhalt |
+| Byte | Content |
 |:---|:---|
 | 0–3 | `wang` |
-| 5 | Helligkeit: `0x00` 100 %, `0x10` 75 %, `0x20` 50 %, `0x40` 25 % |
-| 8 | Nachricht 1: Geschwindigkeit (0–7) im oberen, Modus im unteren Halbbyte |
-| 16–17 | Länge von Nachricht 1 in Kacheln, Big Endian |
-| 38–43 | Zeitstempel: Jahr (zweistellig), Monat, Tag, Stunde, Minute, Sekunde |
+| 5 | brightness: `0x00` 100 %, `0x10` 75 %, `0x20` 50 %, `0x40` 25 % |
+| 8 | message 1: speed (0–7) in the upper, mode in the lower nibble |
+| 16–17 | length of message 1 in tiles, big endian |
+| 38–43 | timestamp: year (two digits), month, day, hour, minute, second |
 
-Die Bitmap besteht aus Kacheln zu 8 Spalten × 11 Zeilen, ein Byte pro Zeile, höchstwertiges Bit links.
+The bitmap consists of tiles of 8 columns × 11 rows, one byte per row, most significant bit on the left.
 
-⚠ Im statischen Modus zeigt das Badge Bitmap-Spalte n auf Displayspalte n+2 (gemessen). Der Treiber gleicht das aus (`static_x_shift` in `drivers/lsled.py`). Die Displayspalten 0 und 1 sind statisch nicht erreichbar, nutzbar sind 42 Spalten.
+⚠ In static mode the badge shows bitmap column n on display column n+2 (measured). The driver compensates (`static_x_shift` in `drivers/lsled.py`). Display columns 0 and 1 cannot be reached in static mode; 42 columns are usable.
+
+## Credits and licenses
+
+lsled-badge, including the hand-drawn fonts `5x9`, `3x5`, `space` and the fonts derived from them, is released under the MIT license, see [LICENSE](LICENSE).
+
+- The `timhodson` driver is based on the protocol analysis in [timhodson/ble-led-badge](https://github.com/timhodson/ble-led-badge) by Tim Hodson: commands, AES key and cell encoding. The code here is written anew. That project declares the MIT license in its `pyproject.toml` but has no license file.
+- The fonts imported from figlet's `bdffonts` keep their own licenses: X Consortium (`5x7`, `6x9`), Schumacher (`clr4x6`, `clr5x8`), Adobe/Digital (`helv`, `helvb`), public domain (`6x10`). The full copyright and license text is in the `notice` field of each font file.
