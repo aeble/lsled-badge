@@ -62,5 +62,6 @@
  "mode.laser": "Laser",
  "opt.driver": "skilttype, standard lsled",
  "web.driver": "Skilttype",
- "err.mode_unsupported": "Skilttypen »{driver}« understøtter ikke tilstanden »{mode}«. Tilgængelige: {modes}"
+ "err.mode_unsupported": "Skilttypen »{driver}« understøtter ikke tilstanden »{mode}«. Tilgængelige: {modes}",
+ "err.device_not_found": "Skiltet {address} blev ikke fundet. Er det tændt og inden for rækkevidde? lsled scan viser skilte i nærheden."
 }

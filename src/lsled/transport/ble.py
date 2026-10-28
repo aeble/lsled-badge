@@ -3,7 +3,9 @@ import asyncio
 from dataclasses import dataclass
 
 from bleak import BleakClient, BleakScanner
+from bleak.exc import BleakDeviceNotFoundError
 
+from ..core.i18n import LocalizedError
 from ..drivers import DRIVERS, Driver, Write
 
 
@@ -28,10 +30,13 @@ async def scan(timeout: float) -> list[Found]:
 
 
 async def execute(address: str, driver: Driver, writes: list[Write]) -> None:
-    async with BleakClient(address, timeout=20) as client:
-        for characteristic in driver.notify_characteristics:
-            await client.start_notify(characteristic, lambda _sender, _data: None)
-        for write in writes:
-            await client.write_gatt_char(write.characteristic, write.data, response=write.response)
-            if write.pause:
-                await asyncio.sleep(write.pause)
+    try:
+        async with BleakClient(address, timeout=20) as client:
+            for characteristic in driver.notify_characteristics:
+                await client.start_notify(characteristic, lambda _sender, _data: None)
+            for write in writes:
+                await client.write_gatt_char(write.characteristic, write.data, response=write.response)
+                if write.pause:
+                    await asyncio.sleep(write.pause)
+    except BleakDeviceNotFoundError as error:
+        raise LocalizedError("err.device_not_found", address=address) from error

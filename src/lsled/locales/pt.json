@@ -62,5 +62,6 @@
  "mode.laser": "Laser",
  "opt.driver": "tipo de crachá, padrão lsled",
  "web.driver": "Tipo de crachá",
- "err.mode_unsupported": "O tipo de crachá “{driver}” não suporta o modo “{mode}”. Disponíveis: {modes}"
+ "err.mode_unsupported": "O tipo de crachá “{driver}” não suporta o modo “{mode}”. Disponíveis: {modes}",
+ "err.device_not_found": "Crachá {address} não encontrado. Ele está ligado e ao alcance? lsled scan lista os crachás próximos."
 }

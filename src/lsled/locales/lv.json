@@ -62,5 +62,6 @@
  "mode.laser": "Lāzers",
  "opt.driver": "nozīmītes tips, noklusējums lsled",
  "web.driver": "Nozīmītes tips",
- "err.mode_unsupported": "Nozīmītes tips “{driver}” neatbalsta režīmu “{mode}”. Pieejamie: {modes}"
+ "err.mode_unsupported": "Nozīmītes tips “{driver}” neatbalsta režīmu “{mode}”. Pieejamie: {modes}",
+ "err.device_not_found": "Nozīmīte {address} netika atrasta. Vai tā ir ieslēgta un darbības zonā? lsled scan parāda tuvumā esošās nozīmītes."
 }

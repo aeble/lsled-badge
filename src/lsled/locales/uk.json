@@ -62,5 +62,6 @@
  "mode.laser": "Лазер",
  "opt.driver": "тип бейджа, типово lsled",
  "web.driver": "Тип бейджа",
- "err.mode_unsupported": "Тип бейджа «{driver}» не підтримує режим «{mode}». Доступні: {modes}"
+ "err.mode_unsupported": "Тип бейджа «{driver}» не підтримує режим «{mode}». Доступні: {modes}",
+ "err.device_not_found": "Бейдж {address} не знайдено. Чи він увімкнений і в зоні досяжності? lsled scan показує бейджі поблизу."
 }

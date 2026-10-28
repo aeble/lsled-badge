@@ -62,5 +62,6 @@
  "mode.laser": "Laser",
  "opt.driver": "Badge-Typ, Standard lsled",
  "web.driver": "Badge-Typ",
- "err.mode_unsupported": "Badge-Typ '{driver}' kennt den Modus '{mode}' nicht. Vorhanden: {modes}"
+ "err.mode_unsupported": "Badge-Typ '{driver}' kennt den Modus '{mode}' nicht. Vorhanden: {modes}",
+ "err.device_not_found": "Badge {address} nicht gefunden. Ist es eingeschaltet und in Reichweite? lsled scan zeigt die Badges in der Nähe."
 }

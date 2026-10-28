@@ -62,5 +62,6 @@
  "mode.laser": "Laser",
  "opt.driver": "badgetype, standaard lsled",
  "web.driver": "Badgetype",
- "err.mode_unsupported": "Badgetype ‘{driver}’ ondersteunt modus ‘{mode}’ niet. Beschikbaar: {modes}"
+ "err.mode_unsupported": "Badgetype ‘{driver}’ ondersteunt modus ‘{mode}’ niet. Beschikbaar: {modes}",
+ "err.device_not_found": "Badge {address} niet gevonden. Staat hij aan en binnen bereik? lsled scan toont badges in de buurt."
 }

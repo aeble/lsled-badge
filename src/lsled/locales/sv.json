@@ -62,5 +62,6 @@
  "mode.laser": "Laser",
  "opt.driver": "skylttyp, standard lsled",
  "web.driver": "Skylttyp",
- "err.mode_unsupported": "Skylttypen ”{driver}” stöder inte läget ”{mode}”. Tillgängliga: {modes}"
+ "err.mode_unsupported": "Skylttypen ”{driver}” stöder inte läget ”{mode}”. Tillgängliga: {modes}",
+ "err.device_not_found": "Skylten {address} hittades inte. Är den påslagen och inom räckhåll? lsled scan visar skyltar i närheten."
 }

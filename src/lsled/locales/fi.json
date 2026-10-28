@@ -62,5 +62,6 @@
  "mode.laser": "Laser",
  "opt.driver": "kylttityyppi, oletus lsled",
  "web.driver": "Kylttityyppi",
- "err.mode_unsupported": "Kylttityyppi ”{driver}” ei tue tilaa ”{mode}”. Saatavilla: {modes}"
+ "err.mode_unsupported": "Kylttityyppi ”{driver}” ei tue tilaa ”{mode}”. Saatavilla: {modes}",
+ "err.device_not_found": "Kylttiä {address} ei löytynyt. Onko se päällä ja kantaman sisällä? lsled scan näyttää lähellä olevat kyltit."
 }

@@ -62,5 +62,6 @@
  "mode.laser": "Lazeris",
  "opt.driver": "ženklelio tipas, numatytasis lsled",
  "web.driver": "Ženklelio tipas",
- "err.mode_unsupported": "Ženklelio tipas „{driver}“ nepalaiko režimo „{mode}“. Galimi: {modes}"
+ "err.mode_unsupported": "Ženklelio tipas „{driver}“ nepalaiko režimo „{mode}“. Galimi: {modes}",
+ "err.device_not_found": "Ženklelis {address} nerastas. Ar jis įjungtas ir veikimo zonoje? lsled scan parodo netoliese esančius ženklelius."
 }

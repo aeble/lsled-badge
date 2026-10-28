@@ -62,5 +62,6 @@
  "mode.laser": "Laser",
  "opt.driver": "sildi tüüp, vaikimisi lsled",
  "web.driver": "Sildi tüüp",
- "err.mode_unsupported": "Sildi tüüp „{driver}” ei toeta režiimi „{mode}”. Saadaval: {modes}"
+ "err.mode_unsupported": "Sildi tüüp „{driver}” ei toeta režiimi „{mode}”. Saadaval: {modes}",
+ "err.device_not_found": "Silti {address} ei leitud. Kas see on sisse lülitatud ja levialas? lsled scan näitab lähedal olevaid silte."
 }

@@ -62,5 +62,6 @@
  "mode.laser": "激光",
  "opt.driver": "胸牌类型，默认 lsled",
  "web.driver": "胸牌类型",
- "err.mode_unsupported": "胸牌类型“{driver}”不支持模式“{mode}”。可用模式：{modes}"
+ "err.mode_unsupported": "胸牌类型“{driver}”不支持模式“{mode}”。可用模式：{modes}",
+ "err.device_not_found": "未找到胸牌 {address}。它是否已开启并在范围内？lsled scan 可列出附近的胸牌。"
 }
