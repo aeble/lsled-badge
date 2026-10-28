@@ -7,7 +7,7 @@ authors = [
     { name = "Axel Eble", email = "git@eble.name" }
 ]
 requires-python = ">=3.10"
-dependencies = ["bleak>=3.0.2"]
+dependencies = ["bleak>=3.0.2", "pycryptodome>=3.19"]
 
 [project.scripts]
 lsled = "lsled.ui.cli:main"

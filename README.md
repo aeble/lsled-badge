@@ -10,7 +10,7 @@ Gemeint sind die Badges, die sich per BLE als `LSLED` melden und den Service `fe
 uv pip install -e ~/Documents/lsled-badge
 ```
 
-Python 3.10 oder neuer, einzige Abhängigkeit ist `bleak`.
+Python 3.10 oder neuer, Abhängigkeiten `bleak` und `pycryptodome` (für den Treiber `timhodson`).
 
 ## Benutzung
 
@@ -86,7 +86,7 @@ Die festen Texte von argparse (`usage:`, `options:`, `show this help message and
 ```
 src/lsled/
   core/        fonts.py, figlet.py, render.py, i18n.py   Text -> Pixel, Layout, Übersetzungen
-  drivers/     base.py, lsled.py                         Pixel -> Schreibvorgänge je Badge-Typ, ohne I/O
+  drivers/     base.py, lsled.py, timhodson.py           Pixel -> Schreibvorgänge je Badge-Typ, ohne I/O
   transport/   ble.py                                    bleak: Scan, Schreibvorgänge ausführen
   app.py                                                 gemeinsamer Ablauf für CLI und Server
   ui/          cli.py, preview.py, server.py             Kommandozeile, Terminal-Vorschau, HTTP-API
@@ -103,6 +103,9 @@ Ein Treiber (`drivers/base.py`) beschreibt Displaygröße, Modi, Erkennung beim 
 | Treiber | Badge | Display |
 |:---|:---|:---|
 | `lsled` | LSLED, Service `fee0`, Klartextprotokoll „wang“ | 44×11, gemessen |
+| `timhodson` | Service `fee9`, AES-verschlüsselte Befehle | 48×12 laut Typkennung `STYPE12X48N` |
+
+⚠ `timhodson` ist am Gerät nicht getestet. Protokoll, Schlüssel und Zellkodierung stammen aus [timhodson/ble-led-badge](https://github.com/timhodson/ble-led-badge) (MIT). Geprüft ist, dass Befehle, Datenpakete und die Kodierung aller 150 Zeichensegmente seines Fonts byte-gleich mit seinem Code sind. Offen sind die Verschiebung im statischen Modus, die Richtung der Geschwindigkeit (1–8 wird auf 0–255 verteilt) und ob die feste Pause nach `DATS` statt des Wartens auf `DATSOK` reicht.
 
 ## LSLED-Protokoll
 
