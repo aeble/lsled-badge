@@ -59,5 +59,8 @@
  "mode.animation": "애니메이션",
  "mode.snowflake": "눈송이",
  "mode.picture": "그림",
- "mode.laser": "레이저"
+ "mode.laser": "레이저",
+ "opt.driver": "이름표 종류, 기본값 lsled",
+ "web.driver": "이름표 종류",
+ "err.mode_unsupported": "이름표 종류 '{driver}'은(는) '{mode}' 모드를 지원하지 않습니다. 사용 가능: {modes}"
 }

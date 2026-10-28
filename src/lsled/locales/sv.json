@@ -59,5 +59,8 @@
  "mode.animation": "Animation",
  "mode.snowflake": "Snöflingor",
  "mode.picture": "Bild",
- "mode.laser": "Laser"
+ "mode.laser": "Laser",
+ "opt.driver": "skylttyp, standard lsled",
+ "web.driver": "Skylttyp",
+ "err.mode_unsupported": "Skylttypen ”{driver}” stöder inte läget ”{mode}”. Tillgängliga: {modes}"
 }

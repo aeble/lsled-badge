@@ -59,5 +59,8 @@
  "mode.animation": "Animacija",
  "mode.snowflake": "Snaigės",
  "mode.picture": "Paveikslėlis",
- "mode.laser": "Lazeris"
+ "mode.laser": "Lazeris",
+ "opt.driver": "ženklelio tipas, numatytasis lsled",
+ "web.driver": "Ženklelio tipas",
+ "err.mode_unsupported": "Ženklelio tipas „{driver}“ nepalaiko režimo „{mode}“. Galimi: {modes}"
 }

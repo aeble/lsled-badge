@@ -59,5 +59,8 @@
  "mode.animation": "Animation",
  "mode.snowflake": "Schneeflocken",
  "mode.picture": "Bild",
- "mode.laser": "Laser"
+ "mode.laser": "Laser",
+ "opt.driver": "Badge-Typ, Standard lsled",
+ "web.driver": "Badge-Typ",
+ "err.mode_unsupported": "Badge-Typ '{driver}' kennt den Modus '{mode}' nicht. Vorhanden: {modes}"
 }

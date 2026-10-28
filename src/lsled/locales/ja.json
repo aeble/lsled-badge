@@ -59,5 +59,8 @@
  "mode.animation": "アニメーション",
  "mode.snowflake": "雪",
  "mode.picture": "画像",
- "mode.laser": "レーザー"
+ "mode.laser": "レーザー",
+ "opt.driver": "名札の種類（既定 lsled）",
+ "web.driver": "名札の種類",
+ "err.mode_unsupported": "名札の種類「{driver}」はモード「{mode}」に対応していません。利用可能: {modes}"
 }

@@ -59,5 +59,8 @@
  "mode.animation": "Animación",
  "mode.snowflake": "Copos de nieve",
  "mode.picture": "Imagen",
- "mode.laser": "Láser"
+ "mode.laser": "Láser",
+ "opt.driver": "tipo de placa, por defecto lsled",
+ "web.driver": "Tipo de placa",
+ "err.mode_unsupported": "El tipo de placa «{driver}» no admite el modo «{mode}». Disponibles: {modes}"
 }

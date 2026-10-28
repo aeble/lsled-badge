@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>LSLED Badge</title>
+<title>LED Badge</title>
 <style>
   :root {
     --bg: #f4f4f2; --panel: #ffffff; --text: #1d1d1b; --muted: #6b6b66; --border: #d8d8d3;
@@ -39,12 +39,13 @@
 </head>
 <body>
 <main>
-  <h1>LSLED Badge</h1>
+  <h1>LED Badge</h1>
   <div class="panel">
     <div class="display-wrap"><canvas id="display"></canvas></div>
     <p class="hint" id="hint"></p>
     <div class="controls">
       <label class="text-field"><span data-i18n="web.text"></span> <input type="text" id="text" value="Balrog" autocomplete="off"></label>
+      <label><span data-i18n="web.driver"></span> <select id="driver"></select></label>
       <label><span data-i18n="web.font"></span> <select id="font"></select></label>
       <label><span data-i18n="web.mode"></span> <select id="mode"></select></label>
       <label><span data-i18n="web.brightness"></span> <select id="brightness"></select></label>
@@ -62,9 +63,11 @@
 <script>
 const $ = (id) => document.getElementById(id);
 const PIXEL = 14;
-let config, messages, characteristic, canvasRows = null, activeMode = null;
+let config, messages, language, service = null, canvasRows = null, writes = null, renderSeq = 0;
+const characteristics = new Map();
 
 const t = (key, values = {}) => messages[key].replace(/\{(\w+)\}/g, (_, name) => values[name]);
+const driver = () => config.drivers[$("driver").value];
 
 function pickLanguage(available) {
   // First browser language with a catalog; Norwegian -> nb, Simplified Chinese only
@@ -79,67 +82,6 @@ function pickLanguage(available) {
     if (available.includes(language)) return language;
   }
   return "en";
-}
-
-function renderText(text, font, bold) {
-  const glyphOf = (ch) => font.glyphs[ch] ?? font.glyphs[ch.toUpperCase()];
-  const missing = [...new Set([...text].filter((ch) => !glyphOf(ch)))];
-  if (missing.length) throw new Error(t("err.missing_glyphs", { font: font.name, chars: missing.join("") }));
-  const rows = Array.from({ length: font.height }, () => []);
-  [...text].forEach((ch, index) => {
-    glyphOf(ch).forEach((pattern, y) => {
-      let bits = [...pattern].map((p) => (p === "#" ? 1 : 0));
-      // Bold: additionally set every pixel one column to the right
-      if (bold) bits = [...bits, 0].map((b, i) => b | (bits[i - 1] ?? 0));
-      if (index) rows[y].push(0);
-      rows[y].push(...bits);
-    });
-  });
-  return rows;
-}
-
-function layout(textRows, mode) {
-  const { width: displayWidth, height: displayHeight, staticXShift } = config.display;
-  const height = textRows.length;
-  const width = textRows[0]?.length ?? 0;
-  let left = 0, canvasWidth = width;
-  if (mode === "static") {
-    const usable = displayWidth - staticXShift;
-    if (width > usable) throw new Error(t("web.too_wide", { width, usable }));
-    left = Math.max(staticXShift, Math.floor((displayWidth - width) / 2));
-    canvasWidth = displayWidth;
-  }
-  const top = Math.floor((displayHeight - height) / 2);
-  const canvas = Array.from({ length: displayHeight }, () => new Array(canvasWidth).fill(0));
-  textRows.forEach((row, y) => row.forEach((p, x) => { canvas[top + y][left + x] = p; }));
-  return canvas;
-}
-
-function buildPackets(canvas, mode, speed, brightness) {
-  // Measured: in static mode, bitmap column n appears on display column n+2
-  if (mode === "static") canvas = canvas.map((row) => row.slice(config.display.staticXShift));
-  const tiles = Math.ceil(canvas[0].length / 8);
-  const bitmap = [];
-  for (let tile = 0; tile < tiles; tile++) {
-    for (const row of canvas) {
-      let byte = 0;
-      for (let b = 0; b < 8; b++) byte = (byte << 1) | (row[tile * 8 + b] ?? 0);
-      bitmap.push(byte);
-    }
-  }
-  const now = new Date();
-  const header = new Array(64).fill(0);
-  [..."wang"].forEach((c, i) => { header[i] = c.charCodeAt(0); });
-  header[5] = config.brightness[brightness];
-  header[8] = ((speed - 1) << 4) | config.modes[mode];
-  header[16] = tiles >> 8; header[17] = tiles & 0xff;
-  [now.getFullYear() % 100, now.getMonth() + 1, now.getDate(), now.getHours(), now.getMinutes(), now.getSeconds()]
-    .forEach((v, i) => { header[38 + i] = v; });
-  const data = [...header, ...bitmap];
-  while (data.length % 16) data.push(0);
-  const packets = [];
-  for (let i = 0; i < data.length; i += 16) packets.push(new Uint8Array(data.slice(i, i + 16)));
-  return packets;
 }
 
 function draw(canvas) {
@@ -162,30 +104,38 @@ function draw(canvas) {
   }));
 }
 
-function update() {
-  let mode = $("mode").value;
-  try {
-    const text = $("text").value;
-    if (!text) throw new Error(t("web.empty"));
-    const font = config.fonts[$("font").value];
-    const textRows = renderText(text, font, $("bold").checked);
-    const width = textRows[0].length;
-    const usable = config.display.width - config.display.staticXShift;
-    const autoscrolled = $("autoscroll").checked && mode === "static" && width > usable;
-    if (autoscrolled) mode = "left";
-    canvasRows = layout(textRows, mode);
-    activeMode = mode;
+function showHint(message, isError) {
+  $("hint").textContent = message;
+  $("hint").style.color = isError ? "var(--error)" : "";
+}
+
+async function update() {
+  // Rendering happens on the server; only the newest answer is shown
+  const seq = ++renderSeq;
+  const response = await fetch("render", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      text: $("text").value, font: $("font").value, bold: $("bold").checked,
+      mode: $("mode").value, autoscroll: $("autoscroll").checked, driver: $("driver").value,
+      speed: Number($("speed").value), brightness: Number($("brightness").value), language,
+    }),
+  });
+  const result = await response.json();
+  if (seq !== renderSeq) return;
+  if (result.error) {
+    canvasRows = writes = null;
+    showHint(result.error, true);
+  } else {
+    canvasRows = result.canvas;
+    writes = result.writes;
     draw(canvasRows);
-    $("hint").textContent = mode === "static"
+    const width = result.textWidth, usable = driver().display.staticWidth;
+    showHint(result.mode === "static"
       ? t("web.used", { width, usable })
-      : t(autoscrolled ? "web.autoscrolled" : "web.scrolling", { width });
-    $("hint").style.color = "";
-  } catch (error) {
-    canvasRows = null;
-    $("hint").textContent = error.message;
-    $("hint").style.color = "var(--error)";
+      : t(result.autoscrolled ? "web.autoscrolled" : "web.scrolling", { width }), false);
   }
-  $("send").disabled = !(canvasRows && characteristic);
+  $("send").disabled = !(writes && service);
 }
 
 function setStatus(message, isError = false) {
@@ -193,24 +143,38 @@ function setStatus(message, isError = false) {
   $("status").className = isError ? "error" : "";
 }
 
+async function characteristic(uuid) {
+  if (!characteristics.has(uuid)) characteristics.set(uuid, await service.getCharacteristic(uuid));
+  return characteristics.get(uuid);
+}
+
+function disconnect() {
+  service?.device.gatt.disconnect();
+  service = null;
+  characteristics.clear();
+}
+
 async function connect() {
   if (!navigator.bluetooth) {
     setStatus(t("web.no_bluetooth"), true);
     return;
   }
+  disconnect();
+  const current = driver();
   try {
     const device = await navigator.bluetooth.requestDevice({
-      filters: [{ namePrefix: "LSLED" }],
-      optionalServices: [config.serviceUuid],
+      filters: [...current.namePrefixes.map((prefix) => ({ namePrefix: prefix })), { services: [current.serviceUuid] }],
+      optionalServices: [current.serviceUuid],
     });
     device.addEventListener("gattserverdisconnected", () => {
-      characteristic = null;
+      service = null;
+      characteristics.clear();
       setStatus(t("web.disconnected"));
       update();
     });
     const server = await device.gatt.connect();
-    const service = await server.getPrimaryService(config.serviceUuid);
-    characteristic = await service.getCharacteristic(config.charUuid);
+    service = await server.getPrimaryService(current.serviceUuid);
+    for (const uuid of current.notifyCharacteristics) await (await characteristic(uuid)).startNotifications();
     setStatus(t("web.connected", { name: device.name }));
   } catch (error) {
     setStatus(t("web.connect_failed", { error: error.message }), true);
@@ -219,11 +183,15 @@ async function connect() {
 }
 
 async function send() {
-  const packets = buildPackets(canvasRows, activeMode, Number($("speed").value), $("brightness").value);
   $("send").disabled = true;
   try {
-    for (const packet of packets) await characteristic.writeValueWithResponse(packet);
-    setStatus(t("web.sent", { count: packets.length }));
+    for (const write of writes) {
+      const target = await characteristic(write.characteristic);
+      const data = new Uint8Array(write.data.match(/../g).map((byte) => parseInt(byte, 16)));
+      await (write.response ? target.writeValueWithResponse(data) : target.writeValueWithoutResponse(data));
+      if (write.pause) await new Promise((resolve) => setTimeout(resolve, write.pause * 1000));
+    }
+    setStatus(t("web.sent", { count: writes.length }));
   } catch (error) {
     setStatus(t("web.send_failed", { error: error.message }), true);
   }
@@ -234,21 +202,32 @@ function fillSelect(id, values, selected, label = (v) => v) {
   $(id).innerHTML = values.map((v) => `<option value="${v}"${v == selected ? " selected" : ""}>${label(v)}</option>`).join("");
 }
 
+function changeDriver() {
+  // Another badge type has other services; the old connection is useless
+  disconnect();
+  setStatus("");
+  const previous = $("mode").value;
+  const modes = driver().modes;
+  fillSelect("mode", modes, modes.includes(previous) ? previous : "static", (mode) => t(`mode.${mode}`));
+  update();
+}
+
 async function init() {
   config = await (await fetch("config.json")).json();
-  for (const [name, font] of Object.entries(config.fonts)) font.name = name;
-  const language = pickLanguage(Object.keys(config.messages));
+  language = pickLanguage(Object.keys(config.messages));
   messages = config.messages[language];
   document.documentElement.lang = language;
   document.querySelectorAll("[data-i18n]").forEach((el) => { el.textContent = t(el.dataset.i18n); });
+  fillSelect("driver", Object.keys(config.drivers), config.defaultDriver);
   fillSelect("font", Object.keys(config.fonts), "5x9");
-  fillSelect("mode", Object.keys(config.modes), "static", (mode) => t(`mode.${mode}`));
-  fillSelect("brightness", Object.keys(config.brightness).sort((a, b) => b - a), "25", (v) => `${v} %`);
+  for (const option of $("font").options) option.title = config.fonts[option.value];
+  fillSelect("brightness", [100, 75, 50, 25], 25, (v) => `${v} %`);
   fillSelect("speed", [1, 2, 3, 4, 5, 6, 7, 8], 5);
   for (const id of ["text", "font", "mode", "brightness", "speed", "bold", "autoscroll"]) $(id).addEventListener("input", update);
+  $("driver").addEventListener("input", changeDriver);
   $("connect").addEventListener("click", connect);
   $("send").addEventListener("click", send);
-  update();
+  changeDriver();
 }
 
 // Without config.json there are no catalogs, hence English

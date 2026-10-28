@@ -3,9 +3,9 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
-from .i18n import t
+from .i18n import LocalizedError
 
-FONT_DIR = Path(__file__).parent / "fonts"
+FONT_DIR = Path(__file__).parent.parent / "fonts"
 
 
 @dataclass
@@ -27,7 +27,7 @@ def available_fonts() -> list[str]:
 def read_font_file(name: str) -> dict:
     path = FONT_DIR / f"{name}.json"
     if not path.exists():
-        raise ValueError(t("err.unknown_font", name=name, fonts=", ".join(available_fonts())))
+        raise LocalizedError("err.unknown_font", name=name, fonts=", ".join(available_fonts()))
     return json.loads(path.read_text(encoding="utf-8"))
 
 
@@ -40,7 +40,7 @@ def render_text(text: str, font: Font, bold: bool = False) -> list[list[int]]:
     """Set the text with one empty column between glyphs; returns font.height pixel rows."""
     missing = sorted({char for char in text if font.glyph(char) is None})
     if missing:
-        raise ValueError(t("err.missing_glyphs", font=font.name, chars="".join(missing)))
+        raise LocalizedError("err.missing_glyphs", font=font.name, chars="".join(missing))
 
     rows: list[list[int]] = [[] for _ in range(font.height)]
     for index, char in enumerate(text):

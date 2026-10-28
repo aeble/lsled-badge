@@ -59,5 +59,8 @@
  "mode.animation": "动画",
  "mode.snowflake": "雪花",
  "mode.picture": "图片",
- "mode.laser": "激光"
+ "mode.laser": "激光",
+ "opt.driver": "胸牌类型，默认 lsled",
+ "web.driver": "胸牌类型",
+ "err.mode_unsupported": "胸牌类型“{driver}”不支持模式“{mode}”。可用模式：{modes}"
 }

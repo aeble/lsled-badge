@@ -59,5 +59,8 @@
  "mode.animation": "Animatie",
  "mode.snowflake": "Sneeuwvlokken",
  "mode.picture": "Afbeelding",
- "mode.laser": "Laser"
+ "mode.laser": "Laser",
+ "opt.driver": "badgetype, standaard lsled",
+ "web.driver": "Badgetype",
+ "err.mode_unsupported": "Badgetype ‘{driver}’ ondersteunt modus ‘{mode}’ niet. Beschikbaar: {modes}"
 }

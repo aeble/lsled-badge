@@ -59,5 +59,8 @@
  "mode.animation": "Animatsioon",
  "mode.snowflake": "Lumehelbed",
  "mode.picture": "Pilt",
- "mode.laser": "Laser"
+ "mode.laser": "Laser",
+ "opt.driver": "sildi tüüp, vaikimisi lsled",
+ "web.driver": "Sildi tüüp",
+ "err.mode_unsupported": "Sildi tüüp „{driver}” ei toeta režiimi „{mode}”. Saadaval: {modes}"
 }

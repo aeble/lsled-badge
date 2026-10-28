@@ -59,5 +59,8 @@
  "mode.animation": "Animācija",
  "mode.snowflake": "Sniegpārslas",
  "mode.picture": "Attēls",
- "mode.laser": "Lāzers"
+ "mode.laser": "Lāzers",
+ "opt.driver": "nozīmītes tips, noklusējums lsled",
+ "web.driver": "Nozīmītes tips",
+ "err.mode_unsupported": "Nozīmītes tips “{driver}” neatbalsta režīmu “{mode}”. Pieejamie: {modes}"
 }

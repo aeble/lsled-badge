@@ -5,7 +5,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-LOCALE_DIR = Path(__file__).parent / "locales"
+LOCALE_DIR = Path(__file__).parent.parent / "locales"
 FALLBACK = "en"
 
 _messages: dict[str, str] | None = None
@@ -48,6 +48,21 @@ def load_messages(language: str) -> dict[str, str]:
     if language != FALLBACK:
         messages.update(json.loads((LOCALE_DIR / f"{language}.json").read_text(encoding="utf-8")))
     return messages
+
+
+class LocalizedError(ValueError):
+    """Error whose message is looked up per language when it is shown."""
+
+    def __init__(self, key: str, **values):
+        super().__init__(key)
+        self.key = key
+        self.values = values
+
+    def __str__(self) -> str:
+        return t(self.key, **self.values)
+
+    def translate(self, messages: dict[str, str], key: str | None = None) -> str:
+        return messages[key or self.key].format(**self.values)
 
 
 def t(key: str, **values) -> str:

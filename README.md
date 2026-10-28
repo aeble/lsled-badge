@@ -29,11 +29,12 @@ lsled web                                   # Weboberfläche auf http://localhos
 
 | Option | Werte | Standard |
 |:---|:---|:---|
+| `-d`, `--driver` | Badge-Typ, siehe Abschnitt Treiber | `lsled` |
 | `-f`, `--font` | siehe `lsled fonts` | `5x9` |
 | `--bold` | jede Glyphe eine Spalte breiter | aus |
 | `--autoscroll` | bei `static` nach links laufen, wenn der Text nicht passt | aus |
 | `-m`, `--mode` | `static`, `left`, `right`, `up`, `down`, `animation`, `snowflake`, `picture`, `laser` | `static` |
-| `-b`, `--brightness` | 25, 50, 75, 100 | 25 |
+| `-b`, `--brightness` | 1–100 (Prozent; LSLED kennt nur 25/50/75/100 und nimmt die nächste Stufe) | 25 |
 | `-s`, `--speed` | 1–8 | 5 |
 | `-a`, `--address` | BLE-Adresse (macOS: UUID) | `$LSLED_ADDR` |
 
@@ -80,7 +81,30 @@ LANG=ja_JP.UTF-8 lsled --help
 
 Die festen Texte von argparse (`usage:`, `options:`, `show this help message and exit`) bleiben englisch.
 
-## Protokoll
+## Aufbau
+
+```
+src/lsled/
+  core/        fonts.py, figlet.py, render.py, i18n.py   Text -> Pixel, Layout, Übersetzungen
+  drivers/     base.py, lsled.py                         Pixel -> Schreibvorgänge je Badge-Typ, ohne I/O
+  transport/   ble.py                                    bleak: Scan, Schreibvorgänge ausführen
+  app.py                                                 gemeinsamer Ablauf für CLI und Server
+  ui/          cli.py, preview.py, server.py             Kommandozeile, Terminal-Vorschau, HTTP-API
+  web/         index.html                                Darstellung, Bedienung, Web Bluetooth
+  fonts/, locales/                                       Daten
+```
+
+Abhängigkeiten zeigen nur nach unten: `ui` → `app` → `drivers`/`transport` → `core`. Die Webseite rechnet nichts selbst: Sie schickt ihre Einstellungen an `POST /render` und bekommt Pixelfläche, verwendeten Modus und die fertige Liste der Schreibvorgänge zurück, die sie per Web Bluetooth ausführt.
+
+## Treiber
+
+Ein Treiber (`drivers/base.py`) beschreibt Displaygröße, Modi, Erkennung beim Scan und die Characteristics, deren Benachrichtigungen vor dem Schreiben eingeschaltet sein müssen. `build_writes()` macht aus Pixelfläche, Modus, Geschwindigkeit (1–8) und Helligkeit (Prozent) eine Liste von Schreibvorgängen (Characteristic, Bytes, mit/ohne Antwort, Pause danach). Neue Badge-Typen sind eine neue Datei in `drivers/` plus Eintrag in `drivers/__init__.py`.
+
+| Treiber | Badge | Display |
+|:---|:---|:---|
+| `lsled` | LSLED, Service `fee0`, Klartextprotokoll „wang“ | 44×11, gemessen |
+
+## LSLED-Protokoll
 
 Ein Datensatz besteht aus 64 Byte Kopf und der Bitmap, aufgefüllt auf ein Vielfaches von 16 und in 16-Byte-Paketen auf `fee1` geschrieben (mit Antwort).
 
@@ -94,4 +118,4 @@ Ein Datensatz besteht aus 64 Byte Kopf und der Bitmap, aufgefüllt auf ein Vielf
 
 Die Bitmap besteht aus Kacheln zu 8 Spalten × 11 Zeilen, ein Byte pro Zeile, höchstwertiges Bit links.
 
-⚠ Im statischen Modus zeigt das Badge Bitmap-Spalte n auf Displayspalte n+2 (gemessen). `lsled` gleicht das aus (`STATIC_X_SHIFT` in `protocol.py`). Die Displayspalten 0 und 1 sind statisch nicht erreichbar, nutzbar sind 42 Spalten.
+⚠ Im statischen Modus zeigt das Badge Bitmap-Spalte n auf Displayspalte n+2 (gemessen). Der Treiber gleicht das aus (`static_x_shift` in `drivers/lsled.py`). Die Displayspalten 0 und 1 sind statisch nicht erreichbar, nutzbar sind 42 Spalten.

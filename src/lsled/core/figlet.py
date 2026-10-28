@@ -5,7 +5,7 @@ figlet/fonts/bdffonts. Every character except space and hardblank counts as a pi
 """
 from pathlib import Path
 
-from .i18n import t
+from .i18n import LocalizedError
 
 # Required characters of every .flf file after ASCII 32-126, in this order
 GERMAN_CODES = [196, 214, 220, 228, 246, 252, 223]
@@ -23,7 +23,7 @@ def read_flf(path: Path) -> tuple[int, dict[int, list[str]], str]:
     lines = path.read_text(encoding="latin-1").splitlines()
     header = lines[0].split()
     if not header[0].startswith("flf2a"):
-        raise ValueError(t("err.not_flf", path=path))
+        raise LocalizedError("err.not_flf", path=path)
     hardblank = header[0][5]
     height = int(header[1])
     comment_lines = int(header[5])
@@ -57,10 +57,10 @@ def convert_flf(path: Path, max_height: int) -> dict:
     # Drop rows at top and bottom that no glyph uses
     used_rows = [y for y in range(height) if any(any(rows[y]) for rows in pixels.values() if y < len(rows))]
     if not used_rows:
-        raise ValueError(t("err.no_pixels", path=path))
+        raise LocalizedError("err.no_pixels", path=path)
     top, bottom = used_rows[0], used_rows[-1] + 1
     if bottom - top > max_height:
-        raise ValueError(t("err.font_too_tall", height=bottom - top, max=max_height))
+        raise LocalizedError("err.font_too_tall", height=bottom - top, max=max_height)
 
     glyphs = {}
     for code, rows in pixels.items():

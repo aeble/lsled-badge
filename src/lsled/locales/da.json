@@ -59,5 +59,8 @@
  "mode.animation": "Animation",
  "mode.snowflake": "Snefnug",
  "mode.picture": "Billede",
- "mode.laser": "Laser"
+ "mode.laser": "Laser",
+ "opt.driver": "skilttype, standard lsled",
+ "web.driver": "Skilttype",
+ "err.mode_unsupported": "Skilttypen »{driver}« understøtter ikke tilstanden »{mode}«. Tilgængelige: {modes}"
 }

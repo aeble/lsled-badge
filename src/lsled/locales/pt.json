@@ -59,5 +59,8 @@
  "mode.animation": "Animação",
  "mode.snowflake": "Flocos de neve",
  "mode.picture": "Imagem",
- "mode.laser": "Laser"
+ "mode.laser": "Laser",
+ "opt.driver": "tipo de crachá, padrão lsled",
+ "web.driver": "Tipo de crachá",
+ "err.mode_unsupported": "O tipo de crachá “{driver}” não suporta o modo “{mode}”. Disponíveis: {modes}"
 }

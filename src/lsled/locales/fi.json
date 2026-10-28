@@ -59,5 +59,8 @@
  "mode.animation": "Animaatio",
  "mode.snowflake": "Lumihiutaleet",
  "mode.picture": "Kuva",
- "mode.laser": "Laser"
+ "mode.laser": "Laser",
+ "opt.driver": "kylttityyppi, oletus lsled",
+ "web.driver": "Kylttityyppi",
+ "err.mode_unsupported": "Kylttityyppi ”{driver}” ei tue tilaa ”{mode}”. Saatavilla: {modes}"
 }

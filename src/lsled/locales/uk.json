@@ -59,5 +59,8 @@
  "mode.animation": "Анімація",
  "mode.snowflake": "Сніжинки",
  "mode.picture": "Зображення",
- "mode.laser": "Лазер"
+ "mode.laser": "Лазер",
+ "opt.driver": "тип бейджа, типово lsled",
+ "web.driver": "Тип бейджа",
+ "err.mode_unsupported": "Тип бейджа «{driver}» не підтримує режим «{mode}». Доступні: {modes}"
 }
