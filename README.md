@@ -22,6 +22,8 @@ On Linux the user needs access to the HID device, for example with a udev rule i
 SUBSYSTEM=="hidraw", ATTRS{idVendor}=="0416", ATTRS{idProduct}=="5020", TAG+="uaccess"
 ```
 
+FreeBSD (untested): only USB. bleak does not support FreeBSD, so Bluetooth and `lsled scan` will not work; `lsled send -d lsled-usb` should. pip builds `hidapi` from source there (compiler and the base system's libusb), and the user needs write access to the badge under `/dev/usb/`, for example via a devfs rule or the `operator` group.
+
 ## Usage
 
 ```bash

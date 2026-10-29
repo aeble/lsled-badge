@@ -22,6 +22,8 @@ Unter Linux braucht der Benutzer Zugriff auf das HID-Gerät, etwa per udev-Regel
 SUBSYSTEM=="hidraw", ATTRS{idVendor}=="0416", ATTRS{idProduct}=="5020", TAG+="uaccess"
 ```
 
+FreeBSD (ungetestet): nur USB. bleak unterstützt FreeBSD nicht, Bluetooth und `lsled scan` gehen dort also nicht, `lsled send -d lsled-usb` sollte gehen. `hidapi` baut pip dort aus den Quellen (Compiler und libusb aus dem Basissystem), und der Benutzer braucht Schreibrechte auf das Badge unter `/dev/usb/`, etwa per devfs-Regel oder Gruppe `operator`.
+
 ## Benutzung
 
 ```bash
