@@ -1,5 +1,5 @@
 {
- "cli.description": "Saada tekst LSLED-nimesiltidele Bluetooth LE kaudu",
+ "cli.description": "Saada tekst LSLED-nimesiltidele Bluetooth LE või USB kaudu",
  "cmd.scan": "otsi LSLED-silte",
  "cmd.fonts": "loetle saadaolevad fondid",
  "cmd.import_figlet": "impordi figleti font (.flf)",
@@ -14,7 +14,7 @@
  "opt.bold": "paks kiri (iga märk ühe veeru võrra laiem)",
  "opt.mode": "kuvarežiim, vaikimisi static",
  "opt.autoscroll": "keri vasakule, kui tekst ekraanile ei mahu",
- "opt.address": "sildi aadress, vaikimisi $LSLED_ADDR",
+ "opt.address": "sildi aadress (lsled scan), vaikimisi $LSLED_ADDR; USB puhul esimene ühendatud silt",
  "opt.brightness": "heledus protsentides, vaikimisi 25",
  "opt.speed": "kerimiskiirus 1-8, vaikimisi 5",
  "opt.port": "port, vaikimisi 8044",
@@ -76,5 +76,7 @@
  "overflow.error": "näita viga",
  "overflow.scroll": "keri vasakule",
  "overflow.pages": "jaga lehtedeks",
- "web.paged": "{count} lehte, igaüks kuni {usable} pikslit lai"
+ "web.paged": "{count} lehte, igaüks kuni {usable} pikslit lai",
+ "err.no_usb_badge": "USB-silti ei leitud. Kas see on ühendatud?",
+ "err.usb_not_found": "USB-silti {address} ei leitud. Kas see on endiselt ühendatud? lsled scan näitab ühendatud silte."
 }

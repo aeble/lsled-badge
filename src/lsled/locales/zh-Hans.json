@@ -1,5 +1,5 @@
 {
- "cli.description": "通过低功耗蓝牙向 LSLED 胸牌发送文字",
+ "cli.description": "通过低功耗蓝牙或 USB 向 LSLED 胸牌发送文字",
  "cmd.scan": "搜索 LSLED 胸牌",
  "cmd.fonts": "列出可用字体",
  "cmd.import_figlet": "导入 figlet 字体（.flf）",
@@ -14,7 +14,7 @@
  "opt.bold": "粗体（每个字形加宽一列）",
  "opt.mode": "显示模式，默认 static",
  "opt.autoscroll": "文字在显示屏上放不下时向左滚动",
- "opt.address": "胸牌地址，默认 $LSLED_ADDR",
+ "opt.address": "胸牌地址（lsled scan），默认 $LSLED_ADDR；USB 时为第一个接入的胸牌",
  "opt.brightness": "亮度百分比，默认 25",
  "opt.speed": "滚动速度 1-8，默认 5",
  "opt.port": "端口，默认 8044",
@@ -76,5 +76,7 @@
  "overflow.error": "显示错误",
  "overflow.scroll": "向左滚动",
  "overflow.pages": "分页显示",
- "web.paged": "{count} 页，每页最宽 {usable} 像素"
+ "web.paged": "{count} 页，每页最宽 {usable} 像素",
+ "err.no_usb_badge": "未找到 USB 胸牌。是否已插入？",
+ "err.usb_not_found": "未找到 USB 胸牌 {address}。它是否仍已插入？lsled scan 可列出已插入的胸牌。"
 }

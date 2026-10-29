@@ -201,7 +201,7 @@ async function scan() {
   try {
     const { devices } = await (await fetch(`devices?driver=${encodeURIComponent($("driver").value)}`)).json();
     // Advertised names come from any device nearby; build options without parsing them as HTML
-    $("device").replaceChildren(...devices.map((d) => new Option(`${d.name || d.address} (${d.rssi} dBm)`, d.address)));
+    $("device").replaceChildren(...devices.map((d) => new Option(`${d.name || d.address} (${d.rssi === null ? "USB" : `${d.rssi} dBm`})`, d.address)));
     setStatus(devices.length ? t("web.found", { count: devices.length }) : t("msg.no_badge"));
   } catch (error) {
     setStatus(t("web.connect_failed", { error: error.message }), true);
@@ -247,6 +247,8 @@ function changeDriver() {
   disconnect();
   setStatus("");
   $("device").innerHTML = "";
+  // Web Bluetooth reaches only Bluetooth badges; USB ones go through the server
+  $("connect").hidden = !navigator.bluetooth || driver().transport !== "ble";
   const previous = $("mode").value;
   const modes = driver().modes;
   fillSelect("mode", modes, modes.includes(previous) ? previous : "static", (mode) => t(`mode.${mode}`));
@@ -267,8 +269,6 @@ async function init() {
   fillSelect("overflow", config.overflow, "error", (choice) => t(`overflow.${choice}`));
   for (const id of ["text", "font", "mode", "brightness", "speed", "bold", "overflow"]) $(id).addEventListener("input", update);
   $("driver").addEventListener("input", changeDriver);
-  // Without Web Bluetooth (Firefox, Safari) only the server path is offered
-  $("connect").hidden = !navigator.bluetooth;
   $("connect").addEventListener("click", connect);
   $("scan").addEventListener("click", scan);
   $("device").addEventListener("input", update);

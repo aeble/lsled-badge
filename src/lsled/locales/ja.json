@@ -1,5 +1,5 @@
 {
- "cli.description": "Bluetooth LE で LSLED 名札にテキストを送信します",
+ "cli.description": "Bluetooth LE または USB で LSLED 名札にテキストを送信します",
  "cmd.scan": "LSLED 名札を検索",
  "cmd.fonts": "利用可能なフォントを一覧表示",
  "cmd.import_figlet": "figlet フォント（.flf）を取り込む",
@@ -14,7 +14,7 @@
  "opt.bold": "太字（各文字を 1 列広くする）",
  "opt.mode": "表示モード（既定 static）",
  "opt.autoscroll": "テキストがディスプレイに収まらない場合は左へスクロール",
- "opt.address": "名札のアドレス（既定 $LSLED_ADDR）",
+ "opt.address": "名札のアドレス（lsled scan、既定 $LSLED_ADDR。USB では最初に接続された名札）",
  "opt.brightness": "明るさ（パーセント、既定 25）",
  "opt.speed": "スクロール速度 1-8（既定 5）",
  "opt.port": "ポート（既定 8044）",
@@ -76,5 +76,7 @@
  "overflow.error": "エラーを表示",
  "overflow.scroll": "左へスクロール",
  "overflow.pages": "ページに分ける",
- "web.paged": "{count} ページ、各ページ最大 {usable} ピクセル"
+ "web.paged": "{count} ページ、各ページ最大 {usable} ピクセル",
+ "err.no_usb_badge": "USB 名札が見つかりません。接続されていますか？",
+ "err.usb_not_found": "USB 名札 {address} が見つかりません。まだ接続されていますか？lsled scan で接続中の名札を表示できます。"
 }

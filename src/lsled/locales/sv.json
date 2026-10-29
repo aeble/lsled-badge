@@ -1,5 +1,5 @@
 {
- "cli.description": "Skicka text till LSLED-namnskyltar via Bluetooth LE",
+ "cli.description": "Skicka text till LSLED-namnskyltar via Bluetooth LE eller USB",
  "cmd.scan": "sök efter LSLED-skyltar",
  "cmd.fonts": "lista tillgängliga typsnitt",
  "cmd.import_figlet": "importera ett figlet-typsnitt (.flf)",
@@ -14,7 +14,7 @@
  "opt.bold": "fetstil (varje tecken en kolumn bredare)",
  "opt.mode": "visningsläge, standard static",
  "opt.autoscroll": "rulla åt vänster om texten inte får plats på displayen",
- "opt.address": "skyltens adress, standard $LSLED_ADDR",
+ "opt.address": "skyltens adress (lsled scan), standard $LSLED_ADDR; med USB den första anslutna skylten",
  "opt.brightness": "ljusstyrka i procent, standard 25",
  "opt.speed": "rullningshastighet 1-8, standard 5",
  "opt.port": "port, standard 8044",
@@ -76,5 +76,7 @@
  "overflow.error": "visa fel",
  "overflow.scroll": "rulla åt vänster",
  "overflow.pages": "dela upp på sidor",
- "web.paged": "{count} sidor, var och en upp till {usable} pixlar bred"
+ "web.paged": "{count} sidor, var och en upp till {usable} pixlar bred",
+ "err.no_usb_badge": "Ingen USB-skylt hittades. Är den ansluten?",
+ "err.usb_not_found": "USB-skylten {address} hittades inte. Är den fortfarande ansluten? lsled scan visar anslutna skyltar."
 }

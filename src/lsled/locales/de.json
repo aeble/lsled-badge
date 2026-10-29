@@ -1,5 +1,5 @@
 {
- "cli.description": "Text per Bluetooth LE an LSLED-Namensbadges senden",
+ "cli.description": "Text per Bluetooth LE oder USB an LSLED-Namensbadges senden",
  "cmd.scan": "nach LSLED-Badges suchen",
  "cmd.fonts": "vorhandene Fonts auflisten",
  "cmd.import_figlet": "figlet-Font (.flf) übernehmen",
@@ -14,7 +14,7 @@
  "opt.bold": "fett (jede Glyphe eine Spalte breiter)",
  "opt.mode": "Anzeigemodus, Standard static",
  "opt.autoscroll": "nach links laufen, wenn der Text nicht aufs Display passt",
- "opt.address": "Adresse des Badges, Standard $LSLED_ADDR",
+ "opt.address": "Adresse des Badges (lsled scan), Standard $LSLED_ADDR, bei USB das erste eingesteckte Badge",
  "opt.brightness": "Helligkeit in Prozent, Standard 25",
  "opt.speed": "Laufgeschwindigkeit 1-8, Standard 5",
  "opt.port": "Port, Standard 8044",
@@ -76,5 +76,7 @@
  "overflow.error": "Fehler zeigen",
  "overflow.scroll": "nach links laufen",
  "overflow.pages": "auf Seiten verteilen",
- "web.paged": "{count} Seiten, je bis zu {usable} Pixel breit"
+ "web.paged": "{count} Seiten, je bis zu {usable} Pixel breit",
+ "err.no_usb_badge": "Kein USB-Badge gefunden. Ist es eingesteckt?",
+ "err.usb_not_found": "USB-Badge {address} nicht gefunden. Steckt es noch? lsled scan zeigt die eingesteckten Badges."
 }

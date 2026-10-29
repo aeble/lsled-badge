@@ -1,7 +1,7 @@
 [project]
 name = "lsled-badge"
 version = "0.1.0"
-description = "LSLED-Namensbadges (BLE-Service fee0) mit Text bespielen, mit Vorschau in Terminal und Browser"
+description = "LSLED-Namensbadges (BLE-Service fee0 oder USB 0416:5020) mit Text bespielen, mit Vorschau in Terminal und Browser"
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
@@ -9,7 +9,7 @@ authors = [
     { name = "Axel Eble", email = "git@eble.name" }
 ]
 requires-python = ">=3.10"
-dependencies = ["bleak>=3.0.2", "pycryptodome>=3.19"]
+dependencies = ["bleak>=3.0.2", "hidapi>=0.15.0", "pycryptodome>=3.19"]
 
 [project.scripts]
 lsled = "lsled.ui.cli:main"

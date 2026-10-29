@@ -50,6 +50,12 @@ class LsledDriver(Driver):
     name_prefixes = ("LSLED",)
 
     def build_writes(self, pages: list[list[list[int]]], mode: str, speed: int, brightness: int) -> list[Write]:
+        data = self.build_record(pages, mode, speed, brightness)
+        data += bytes(-len(data) % 16)
+        return [Write(CHAR_UUID, data[i:i + 16]) for i in range(0, len(data), 16)]
+
+    def build_record(self, pages: list[list[list[int]]], mode: str, speed: int, brightness: int) -> bytes:
+        """Header and bitmaps, unpadded; the USB badges take the same record."""
         # The badge only knows four steps; take the nearest, ties go to the brighter one
         level = min(BRIGHTNESS, key=lambda step: (abs(step - brightness), -step))
 
@@ -66,6 +72,4 @@ class LsledDriver(Driver):
             bitmaps += bitmap
         header[38:44] = bytes([now.year % 100, now.month, now.day, now.hour, now.minute, now.second])
 
-        data = bytes(header) + bitmaps
-        data += bytes(-len(data) % 16)
-        return [Write(CHAR_UUID, data[i:i + 16]) for i in range(0, len(data), 16)]
+        return bytes(header) + bitmaps

@@ -1,5 +1,5 @@
 {
- "cli.description": "Siųsti tekstą į LSLED vardo ženklelius per Bluetooth LE",
+ "cli.description": "Siųsti tekstą į LSLED vardo ženklelius per Bluetooth LE arba USB",
  "cmd.scan": "ieškoti LSLED ženklelių",
  "cmd.fonts": "rodyti galimus šriftus",
  "cmd.import_figlet": "importuoti figlet šriftą (.flf)",
@@ -14,7 +14,7 @@
  "opt.bold": "pusjuodis (kiekvienas simbolis vienu stulpeliu platesnis)",
  "opt.mode": "rodymo režimas, numatytasis static",
  "opt.autoscroll": "slinkti į kairę, jei tekstas netelpa ekrane",
- "opt.address": "ženklelio adresas, numatytasis $LSLED_ADDR",
+ "opt.address": "ženklelio adresas (lsled scan), numatytasis $LSLED_ADDR; USB atveju pirmas prijungtas ženklelis",
  "opt.brightness": "ryškumas procentais, numatytasis 25",
  "opt.speed": "slinkimo greitis 1-8, numatytasis 5",
  "opt.port": "prievadas, numatytasis 8044",
@@ -76,5 +76,7 @@
  "overflow.error": "rodyti klaidą",
  "overflow.scroll": "slinkti į kairę",
  "overflow.pages": "padalyti į puslapius",
- "web.paged": "Puslapių: {count}, kiekvienas iki {usable} pikselių pločio"
+ "web.paged": "Puslapių: {count}, kiekvienas iki {usable} pikselių pločio",
+ "err.no_usb_badge": "USB ženklelis nerastas. Ar jis prijungtas?",
+ "err.usb_not_found": "USB ženklelis {address} nerastas. Ar jis vis dar prijungtas? lsled scan parodo prijungtus ženklelius."
 }
