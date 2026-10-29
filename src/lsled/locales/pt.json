@@ -1,5 +1,5 @@
 {
- "cli.description": "Enviar texto para crachás LSLED via Bluetooth LE",
+ "cli.description": "Enviar texto para crachás LSLED via Bluetooth LE ou USB",
  "cmd.scan": "procurar crachás LSLED",
  "cmd.fonts": "listar as fontes disponíveis",
  "cmd.import_figlet": "importar uma fonte figlet (.flf)",
@@ -14,7 +14,7 @@
  "opt.bold": "negrito (cada glifo uma coluna mais largo)",
  "opt.mode": "modo de exibição, padrão static",
  "opt.autoscroll": "rolar para a esquerda se o texto não couber no display",
- "opt.address": "endereço do crachá, padrão $LSLED_ADDR",
+ "opt.address": "endereço do crachá (lsled scan), padrão $LSLED_ADDR; por USB, o primeiro crachá conectado",
  "opt.brightness": "brilho em porcentagem, padrão 25",
  "opt.speed": "velocidade de rolagem 1-8, padrão 5",
  "opt.port": "porta, padrão 8044",
@@ -76,5 +76,7 @@
  "overflow.error": "mostrar erro",
  "overflow.scroll": "rolar para a esquerda",
  "overflow.pages": "dividir em páginas",
- "web.paged": "{count} páginas, cada uma com até {usable} pixels de largura"
+ "web.paged": "{count} páginas, cada uma com até {usable} pixels de largura",
+ "err.no_usb_badge": "Nenhum crachá USB encontrado. Ele está conectado?",
+ "err.usb_not_found": "Crachá USB {address} não encontrado. Ele ainda está conectado? lsled scan lista os crachás conectados."
 }

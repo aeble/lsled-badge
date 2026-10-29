@@ -1,5 +1,5 @@
 {
- "cli.description": "Enviar texto a las placas identificativas LSLED por Bluetooth LE",
+ "cli.description": "Enviar texto a las placas identificativas LSLED por Bluetooth LE o USB",
  "cmd.scan": "buscar placas LSLED",
  "cmd.fonts": "listar las fuentes disponibles",
  "cmd.import_figlet": "importar una fuente figlet (.flf)",
@@ -14,7 +14,7 @@
  "opt.bold": "negrita (cada glifo una columna más ancho)",
  "opt.mode": "modo de visualización, por defecto static",
  "opt.autoscroll": "desplazar a la izquierda si el texto no cabe en la pantalla",
- "opt.address": "dirección de la placa, por defecto $LSLED_ADDR",
+ "opt.address": "dirección de la placa (lsled scan), por defecto $LSLED_ADDR; por USB, la primera placa conectada",
  "opt.brightness": "brillo en porcentaje, por defecto 25",
  "opt.speed": "velocidad de desplazamiento 1-8, por defecto 5",
  "opt.port": "puerto, por defecto 8044",
@@ -76,5 +76,7 @@
  "overflow.error": "mostrar error",
  "overflow.scroll": "desplazar a la izquierda",
  "overflow.pages": "repartir en páginas",
- "web.paged": "{count} páginas, cada una de hasta {usable} píxeles de ancho"
+ "web.paged": "{count} páginas, cada una de hasta {usable} píxeles de ancho",
+ "err.no_usb_badge": "No se encontró ninguna placa USB. ¿Está conectada?",
+ "err.usb_not_found": "No se encontró la placa USB {address}. ¿Sigue conectada? lsled scan muestra las placas conectadas."
 }

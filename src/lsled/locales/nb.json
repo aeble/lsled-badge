@@ -1,5 +1,5 @@
 {
- "cli.description": "Send tekst til LSLED-navneskilt via Bluetooth LE",
+ "cli.description": "Send tekst til LSLED-navneskilt via Bluetooth LE eller USB",
  "cmd.scan": "søk etter LSLED-skilt",
  "cmd.fonts": "vis tilgjengelige skrifttyper",
  "cmd.import_figlet": "importer en figlet-skrifttype (.flf)",
@@ -14,7 +14,7 @@
  "opt.bold": "fet (hvert tegn én kolonne bredere)",
  "opt.mode": "visningsmodus, standard static",
  "opt.autoscroll": "rull mot venstre hvis teksten ikke får plass på skjermen",
- "opt.address": "skiltets adresse, standard $LSLED_ADDR",
+ "opt.address": "skiltets adresse (lsled scan), standard $LSLED_ADDR; med USB det første tilkoblede skiltet",
  "opt.brightness": "lysstyrke i prosent, standard 25",
  "opt.speed": "rullehastighet 1-8, standard 5",
  "opt.port": "port, standard 8044",
@@ -76,5 +76,7 @@
  "overflow.error": "vis feil",
  "overflow.scroll": "rull mot venstre",
  "overflow.pages": "del i sider",
- "web.paged": "{count} sider, hver opptil {usable} piksler bred"
+ "web.paged": "{count} sider, hver opptil {usable} piksler bred",
+ "err.no_usb_badge": "Fant ikke noe USB-skilt. Er det koblet til?",
+ "err.usb_not_found": "Fant ikke USB-skiltet {address}. Er det fortsatt koblet til? lsled scan viser tilkoblede skilt."
 }

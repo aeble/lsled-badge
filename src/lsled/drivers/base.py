@@ -1,4 +1,4 @@
-"""Driver interface: turns pixel canvases into the GATT writes one badge type expects."""
+"""Driver interface: turns pixel canvases into the writes (GATT or HID) one badge type expects."""
 from dataclasses import dataclass
 
 from ..core.render import Display
@@ -6,6 +6,7 @@ from ..core.render import Display
 
 @dataclass(frozen=True)
 class Write:
+    # Empty for USB, where every write is one HID report
     characteristic: str
     data: bytes
     response: bool = True
@@ -17,7 +18,11 @@ class Driver:
     name: str
     display: Display
     modes: tuple[str, ...]
+    # Module in transport/ that reaches the badge: "ble" or "usb"
+    transport: str = "ble"
     service_uuid: str
+    # USB vendor and product id, only for transport "usb"
+    usb_id: tuple[int, int] = (0, 0)
     name_prefixes: tuple[str, ...] = ()
     # Characteristics whose notifications must be enabled before writing
     notify_characteristics: tuple[str, ...] = ()

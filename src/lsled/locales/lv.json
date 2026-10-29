@@ -1,5 +1,5 @@
 {
- "cli.description": "Sūtīt tekstu uz LSLED vārda nozīmītēm, izmantojot Bluetooth LE",
+ "cli.description": "Sūtīt tekstu uz LSLED vārda nozīmītēm, izmantojot Bluetooth LE vai USB",
  "cmd.scan": "meklēt LSLED nozīmītes",
  "cmd.fonts": "parādīt pieejamos fontus",
  "cmd.import_figlet": "importēt figlet fontu (.flf)",
@@ -14,7 +14,7 @@
  "opt.bold": "treknraksts (katra rakstzīme par vienu kolonnu platāka)",
  "opt.mode": "attēlošanas režīms, noklusējums static",
  "opt.autoscroll": "ritināt pa kreisi, ja teksts neietilpst displejā",
- "opt.address": "nozīmītes adrese, noklusējums $LSLED_ADDR",
+ "opt.address": "nozīmītes adrese (lsled scan), noklusējums $LSLED_ADDR; USB gadījumā pirmā pievienotā nozīmīte",
  "opt.brightness": "spilgtums procentos, noklusējums 25",
  "opt.speed": "ritināšanas ātrums 1-8, noklusējums 5",
  "opt.port": "ports, noklusējums 8044",
@@ -76,5 +76,7 @@
  "overflow.error": "rādīt kļūdu",
  "overflow.scroll": "ritināt pa kreisi",
  "overflow.pages": "sadalīt lapās",
- "web.paged": "{count} lapas, katra līdz {usable} pikseļiem plata"
+ "web.paged": "{count} lapas, katra līdz {usable} pikseļiem plata",
+ "err.no_usb_badge": "USB nozīmīte netika atrasta. Vai tā ir pievienota?",
+ "err.usb_not_found": "USB nozīmīte {address} netika atrasta. Vai tā joprojām ir pievienota? lsled scan parāda pievienotās nozīmītes."
 }

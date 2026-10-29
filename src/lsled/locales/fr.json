@@ -1,5 +1,5 @@
 {
- "cli.description": "Envoyer du texte aux badges nominatifs LSLED via Bluetooth LE",
+ "cli.description": "Envoyer du texte aux badges nominatifs LSLED via Bluetooth LE ou USB",
  "cmd.scan": "rechercher des badges LSLED",
  "cmd.fonts": "lister les polices disponibles",
  "cmd.import_figlet": "importer une police figlet (.flf)",
@@ -14,7 +14,7 @@
  "opt.bold": "gras (chaque glyphe une colonne plus large)",
  "opt.mode": "mode d’affichage, par défaut static",
  "opt.autoscroll": "défiler vers la gauche si le texte ne tient pas à l’écran",
- "opt.address": "adresse du badge, par défaut $LSLED_ADDR",
+ "opt.address": "adresse du badge (lsled scan), par défaut $LSLED_ADDR ; en USB, le premier badge branché",
  "opt.brightness": "luminosité en pour cent, par défaut 25",
  "opt.speed": "vitesse de défilement 1-8, par défaut 5",
  "opt.port": "port, par défaut 8044",
@@ -76,5 +76,7 @@
  "overflow.error": "afficher une erreur",
  "overflow.scroll": "défiler vers la gauche",
  "overflow.pages": "répartir sur des pages",
- "web.paged": "{count} pages, chacune jusqu’à {usable} pixels de large"
+ "web.paged": "{count} pages, chacune jusqu’à {usable} pixels de large",
+ "err.no_usb_badge": "Aucun badge USB trouvé. Est-il branché ?",
+ "err.usb_not_found": "Badge USB {address} introuvable. Est-il toujours branché ? lsled scan liste les badges branchés."
 }

@@ -5,9 +5,20 @@ from .core.fonts import Font, load_font, render_text
 from .core.i18n import LocalizedError
 from .core.render import layout, place_vertically, text_width
 from .drivers import Driver
+from .transport import Found, ble, usb
 
 # What to do with text too wide for a one-screen mode
 OVERFLOW = ("error", "scroll", "pages")
+TRANSPORTS = {"ble": ble, "usb": usb}
+
+
+def transport(driver: Driver):
+    return TRANSPORTS[driver.transport]
+
+
+async def scan(timeout: float) -> list[Found]:
+    """Badges plugged in via USB, then those in Bluetooth range."""
+    return await usb.scan(timeout) + await ble.scan(timeout)
 
 
 @dataclass

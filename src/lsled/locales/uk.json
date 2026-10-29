@@ -1,5 +1,5 @@
 {
- "cli.description": "Надсилання тексту на іменні бейджі LSLED через Bluetooth LE",
+ "cli.description": "Надсилання тексту на іменні бейджі LSLED через Bluetooth LE або USB",
  "cmd.scan": "шукати бейджі LSLED",
  "cmd.fonts": "показати доступні шрифти",
  "cmd.import_figlet": "імпортувати шрифт figlet (.flf)",
@@ -14,7 +14,7 @@
  "opt.bold": "жирний (кожен символ на один стовпець ширший)",
  "opt.mode": "режим показу, типово static",
  "opt.autoscroll": "прокручувати ліворуч, якщо текст не вміщується на дисплей",
- "opt.address": "адреса бейджа, типово $LSLED_ADDR",
+ "opt.address": "адреса бейджа (lsled scan), типово $LSLED_ADDR; для USB — перший підключений бейдж",
  "opt.brightness": "яскравість у відсотках, типово 25",
  "opt.speed": "швидкість прокручування 1-8, типово 5",
  "opt.port": "порт, типово 8044",
@@ -76,5 +76,7 @@
  "overflow.error": "показати помилку",
  "overflow.scroll": "прокручувати ліворуч",
  "overflow.pages": "розбити на сторінки",
- "web.paged": "Сторінок: {count}, кожна шириною до {usable} пікселів"
+ "web.paged": "Сторінок: {count}, кожна шириною до {usable} пікселів",
+ "err.no_usb_badge": "USB-бейдж не знайдено. Чи він підключений?",
+ "err.usb_not_found": "USB-бейдж {address} не знайдено. Чи він досі підключений? lsled scan показує підключені бейджі."
 }

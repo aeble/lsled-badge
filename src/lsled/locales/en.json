@@ -1,5 +1,5 @@
 {
- "cli.description": "Send text to LSLED name badges via Bluetooth LE",
+ "cli.description": "Send text to LSLED name badges via Bluetooth LE or USB",
  "cmd.scan": "search for LSLED badges",
  "cmd.fonts": "list available fonts",
  "cmd.import_figlet": "import a figlet font (.flf)",
@@ -14,7 +14,7 @@
  "opt.bold": "bold (every glyph one column wider)",
  "opt.mode": "display mode, default static",
  "opt.autoscroll": "scroll left if the text does not fit on the display",
- "opt.address": "badge address, default $LSLED_ADDR",
+ "opt.address": "badge address (lsled scan), default $LSLED_ADDR; for USB the first badge plugged in",
  "opt.brightness": "brightness in percent, default 25",
  "opt.speed": "scroll speed 1-8, default 5",
  "opt.port": "port, default 8044",
@@ -76,5 +76,7 @@
  "overflow.error": "show error",
  "overflow.scroll": "scroll left",
  "overflow.pages": "split into pages",
- "web.paged": "{count} pages, each up to {usable} pixels wide"
+ "web.paged": "{count} pages, each up to {usable} pixels wide",
+ "err.no_usb_badge": "No USB badge found. Is it plugged in?",
+ "err.usb_not_found": "USB badge {address} not found. Is it still plugged in? lsled scan lists the badges plugged in."
 }

@@ -1,5 +1,5 @@
 {
- "cli.description": "Bluetooth LE로 LSLED 이름표에 텍스트를 보냅니다",
+ "cli.description": "Bluetooth LE 또는 USB로 LSLED 이름표에 텍스트를 보냅니다",
  "cmd.scan": "LSLED 이름표 검색",
  "cmd.fonts": "사용 가능한 글꼴 목록",
  "cmd.import_figlet": "figlet 글꼴(.flf) 가져오기",
@@ -14,7 +14,7 @@
  "opt.bold": "굵게(각 글자를 한 열 넓게)",
  "opt.mode": "표시 모드, 기본값 static",
  "opt.autoscroll": "텍스트가 디스플레이에 맞지 않으면 왼쪽으로 스크롤",
- "opt.address": "이름표 주소, 기본값 $LSLED_ADDR",
+ "opt.address": "이름표 주소(lsled scan), 기본값 $LSLED_ADDR, USB는 처음 연결된 이름표",
  "opt.brightness": "밝기(퍼센트), 기본값 25",
  "opt.speed": "스크롤 속도 1-8, 기본값 5",
  "opt.port": "포트, 기본값 8044",
@@ -76,5 +76,7 @@
  "overflow.error": "오류 표시",
  "overflow.scroll": "왼쪽으로 스크롤",
  "overflow.pages": "페이지로 나누기",
- "web.paged": "{count}페이지, 각각 최대 {usable}픽셀"
+ "web.paged": "{count}페이지, 각각 최대 {usable}픽셀",
+ "err.no_usb_badge": "USB 이름표를 찾을 수 없습니다. 연결되어 있나요?",
+ "err.usb_not_found": "USB 이름표 {address}을(를) 찾을 수 없습니다. 아직 연결되어 있나요? lsled scan으로 연결된 이름표를 볼 수 있습니다."
 }

@@ -1,20 +1,12 @@
 """Bluetooth LE transport via bleak: find badges and execute a driver's writes."""
 import asyncio
-from dataclasses import dataclass
 
 from bleak import BleakClient, BleakScanner
 from bleak.exc import BleakDeviceNotFoundError
 
 from ..core.i18n import LocalizedError
 from ..drivers import DRIVERS, Driver, Write
-
-
-@dataclass
-class Found:
-    address: str
-    name: str
-    rssi: int
-    driver: str
+from . import Found
 
 
 async def scan(timeout: float) -> list[Found]:

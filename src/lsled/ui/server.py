@@ -1,4 +1,4 @@
-"""Local HTTP server for the web interface: page, config, rendering and sending via local Bluetooth."""
+"""Local HTTP server for the web interface: page, config, rendering and sending via local Bluetooth or USB."""
 import asyncio
 import json
 import threading
@@ -9,18 +9,17 @@ from urllib.parse import parse_qs, urlparse
 
 from bleak.exc import BleakError
 
-from ..app import OVERFLOW, compose
+from ..app import OVERFLOW, compose, transport
 from ..core.fonts import available_fonts, load_font
 from ..core.i18n import FALLBACK, LocalizedError, available_languages, load_messages, t
 from ..drivers import DEFAULT_DRIVER, DRIVERS
-from ..transport import ble
 
 WEB_DIR = Path(__file__).parent.parent / "web"
 # Errors whose wording differs on the web page (it names the toggle instead of the option)
 WEB_KEYS = {"err.too_wide": "web.too_wide"}
 SCAN_TIMEOUT = 5.0
-# One Bluetooth operation at a time; requests arrive on parallel threads
-BLE_LOCK = threading.Lock()
+# One Bluetooth or USB operation at a time; requests arrive on parallel threads
+DEVICE_LOCK = threading.Lock()
 
 
 def web_config() -> dict:
@@ -33,6 +32,7 @@ def web_config() -> dict:
                     "height": driver.display.height,
                 },
                 "modes": list(driver.modes),
+                "transport": driver.transport,
                 "serviceUuid": driver.service_uuid,
                 "namePrefixes": list(driver.name_prefixes),
                 "notifyCharacteristics": list(driver.notify_characteristics),
@@ -76,21 +76,22 @@ def render(request: dict) -> dict:
 
 
 def find_devices(driver: str) -> dict:
-    with BLE_LOCK:
-        found = asyncio.run(ble.scan(SCAN_TIMEOUT))
+    with DEVICE_LOCK:
+        found = asyncio.run(transport(DRIVERS[driver]).scan(SCAN_TIMEOUT))
     return {"devices": [{"address": f.address, "name": f.name, "rssi": f.rssi} for f in found if f.driver == driver]}
 
 
 def send(request: dict) -> dict:
-    """Render again and send through this machine's Bluetooth, for browsers without Web Bluetooth."""
+    """Render again and send through this machine's Bluetooth or USB, for browsers without Web Bluetooth."""
     messages = messages_for(request)
     try:
         driver, _result, writes = prepare(request)
-        with BLE_LOCK:
-            asyncio.run(ble.execute(request["address"], driver, writes))
+        with DEVICE_LOCK:
+            asyncio.run(transport(driver).execute(request["address"], driver, writes))
     except LocalizedError as error:
         return {"error": error.translate(messages, WEB_KEYS.get(error.key))}
-    except BleakError as error:
+    # hidapi reports write errors as OSError
+    except (BleakError, OSError) as error:
         return {"error": messages["web.send_failed"].format(error=error)}
     return {"count": len(writes)}
 

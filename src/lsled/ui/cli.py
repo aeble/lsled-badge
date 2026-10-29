@@ -6,12 +6,12 @@ import os
 import sys
 from pathlib import Path
 
-from ..app import compose
+from ..app import compose, scan, transport
 from ..core.figlet import convert_flf
 from ..core.fonts import FONT_DIR, available_fonts, load_font
 from ..core.i18n import LocalizedError, t
 from ..drivers import ALL_MODES, DEFAULT_DRIVER, DRIVERS
-from ..transport import ble
+from ..transport import usb
 from . import server
 from .preview import format_preview
 
@@ -48,7 +48,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     send_parser = commands.add_parser("send", help=t("cmd.send"))
     add_render_options(send_parser)
-    send_parser.add_argument("-a", "--address", default=os.environ.get("LSLED_ADDR"), help=t("opt.address"))
+    send_parser.add_argument("-a", "--address", help=t("opt.address"))
     send_parser.add_argument(
         "-b", "--brightness", type=int, choices=range(1, 101), default=25, metavar="1-100", help=t("opt.brightness")
     )
@@ -66,11 +66,12 @@ def main() -> int:
     args = parser.parse_args()
     try:
         if args.command == "scan":
-            found = asyncio.run(ble.scan(args.timeout))
+            found = asyncio.run(scan(args.timeout))
             if not found:
                 print(t("msg.no_badge"))
             for badge in found:
-                print(f"{badge.address}  {badge.name}  RSSI {badge.rssi}  [{badge.driver}]")
+                signal = "USB" if badge.rssi is None else f"RSSI {badge.rssi}"
+                print(f"{badge.address}  {badge.name}  {signal}  [{badge.driver}]")
         elif args.command == "fonts":
             names = available_fonts()
             width = max(map(len, names))
@@ -94,11 +95,17 @@ def main() -> int:
                 print(t("msg.paged", count=len(result.pages)))
             print("\n".join(format_preview(canvas) for canvas in result.pages))
             if args.command == "send":
-                if not args.address:
+                address = args.address
+                # LSLED_ADDR holds a Bluetooth address; without --address USB takes the first badge
+                if driver.transport == "usb":
+                    address = address or asyncio.run(usb.first_address(driver))
+                else:
+                    address = address or os.environ.get("LSLED_ADDR")
+                if not address:
                     parser.error(t("err.no_address"))
                 writes = driver.build_writes(result.pages, result.mode, args.speed, args.brightness)
-                asyncio.run(ble.execute(args.address, driver, writes))
-                print(t("msg.sent", count=len(writes), address=args.address))
+                asyncio.run(transport(driver).execute(address, driver, writes))
+                print(t("msg.sent", count=len(writes), address=address))
     except LocalizedError as error:
         print(error, file=sys.stderr)
         return 1

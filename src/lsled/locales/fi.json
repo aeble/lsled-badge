@@ -1,5 +1,5 @@
 {
- "cli.description": "Lähetä tekstiä LSLED-nimikyltteihin Bluetooth LE:n kautta",
+ "cli.description": "Lähetä tekstiä LSLED-nimikyltteihin Bluetooth LE:n tai USB:n kautta",
  "cmd.scan": "etsi LSLED-kylttejä",
  "cmd.fonts": "näytä saatavilla olevat fontit",
  "cmd.import_figlet": "tuo figlet-fontti (.flf)",
@@ -14,7 +14,7 @@
  "opt.bold": "lihavoitu (jokainen merkki sarakkeen leveämpi)",
  "opt.mode": "näyttötila, oletus static",
  "opt.autoscroll": "vieritä vasemmalle, jos teksti ei mahdu näyttöön",
- "opt.address": "kyltin osoite, oletus $LSLED_ADDR",
+ "opt.address": "kyltin osoite (lsled scan), oletus $LSLED_ADDR; USB:llä ensimmäinen liitetty kyltti",
  "opt.brightness": "kirkkaus prosentteina, oletus 25",
  "opt.speed": "vieritysnopeus 1-8, oletus 5",
  "opt.port": "portti, oletus 8044",
@@ -76,5 +76,7 @@
  "overflow.error": "näytä virhe",
  "overflow.scroll": "vieritä vasemmalle",
  "overflow.pages": "jaa sivuille",
- "web.paged": "{count} sivua, kukin enintään {usable} pikseliä leveä"
+ "web.paged": "{count} sivua, kukin enintään {usable} pikseliä leveä",
+ "err.no_usb_badge": "USB-kylttiä ei löytynyt. Onko se liitetty?",
+ "err.usb_not_found": "USB-kylttiä {address} ei löytynyt. Onko se yhä liitetty? lsled scan näyttää liitetyt kyltit."
 }

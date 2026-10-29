@@ -1,5 +1,5 @@
 {
- "cli.description": "Tekst naar LSLED-naambadges sturen via Bluetooth LE",
+ "cli.description": "Tekst naar LSLED-naambadges sturen via Bluetooth LE of USB",
  "cmd.scan": "zoeken naar LSLED-badges",
  "cmd.fonts": "beschikbare lettertypen tonen",
  "cmd.import_figlet": "een figlet-lettertype (.flf) importeren",
@@ -14,7 +14,7 @@
  "opt.bold": "vet (elk teken één kolom breder)",
  "opt.mode": "weergavemodus, standaard static",
  "opt.autoscroll": "naar links scrollen als de tekst niet op het display past",
- "opt.address": "adres van de badge, standaard $LSLED_ADDR",
+ "opt.address": "adres van de badge (lsled scan), standaard $LSLED_ADDR; bij USB de eerste aangesloten badge",
  "opt.brightness": "helderheid in procent, standaard 25",
  "opt.speed": "scrollsnelheid 1-8, standaard 5",
  "opt.port": "poort, standaard 8044",
@@ -76,5 +76,7 @@
  "overflow.error": "fout tonen",
  "overflow.scroll": "naar links scrollen",
  "overflow.pages": "over pagina’s verdelen",
- "web.paged": "{count} pagina’s, elk tot {usable} pixels breed"
+ "web.paged": "{count} pagina’s, elk tot {usable} pixels breed",
+ "err.no_usb_badge": "Geen USB-badge gevonden. Is hij aangesloten?",
+ "err.usb_not_found": "USB-badge {address} niet gevonden. Is hij nog aangesloten? lsled scan toont de aangesloten badges."
 }
